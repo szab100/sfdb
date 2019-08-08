@@ -1,0 +1,9 @@
+# Bazel build artifacts
+**/bazel-*
+
+# Backup files
+**/*~
+**/*.ORIG
+
+# Editors files
+.vscode/**

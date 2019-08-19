@@ -23,6 +23,7 @@
 #define UTIL_TASK_STATUS_MATCHER_H_
 
 #include "util/task/statusor.h"
+#include <gmock/gmock-matchers.h>
 
 namespace testing {
 namespace status {
@@ -30,11 +31,11 @@ namespace status {
 template <typename T>
 inline const ::util::Status& GetStatus(const ::util::StatusOr<T>& status) {
   return status.status();
-}
+};
 
 inline const ::util::Status& GetStatus(const ::util::Status& status) {
   return status;
-}
+};
 
 template <typename T>
 class MonoIsOkMatcherImpl : public MatcherInterface<T> {

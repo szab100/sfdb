@@ -51,7 +51,7 @@ struct TypedAst : public Ast {
   TypedAst(
       Type type, std::string &&table_name, std::string &&index_name,
       std::unique_ptr<Ast> &&lhs, std::unique_ptr<Ast> &&rhs, Value &&value,
-      std::vector<string> &&columns, std::vector<string> &&column_types,
+      std::vector<std::string> &&columns, std::vector<std::string> &&column_types,
       std::vector<std::unique_ptr<Ast>> &&values, std::string &&var,
       std::vector<int32> &&column_indices, const AstType &result_type)
       : Ast(

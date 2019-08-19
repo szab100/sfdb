@@ -1,0 +1,22 @@
+syntax = "proto2";
+
+package sfdb;
+
+message ExecSqlRequest {
+  optional string sql = 1;
+
+  // Whether to include debug_strings in the response.
+  optional bool include_debug_strings = 2;
+}
+
+message ExecSqlResponse {
+  // Rows as binary-encoded protobufs.
+  repeated bytes rows = 1;
+
+  // Rows as text-encoded protobufs.
+  repeated string debug_strings = 2;
+}
+
+service SfdbService {
+  rpc ExecSql(ExecSqlRequest) returns (ExecSqlResponse);
+}

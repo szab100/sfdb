@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package sfdb;
+
+message Point {
+  optional int32 x = 1;
+  optional int32 y = 2;
+  optional double weight = 3;
+}
+
+message Data {
+  repeated Point pts = 1;
+  optional string plot_title = 2;
+}

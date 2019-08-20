@@ -12,32 +12,32 @@ proto_library(
     srcs = ["data.proto"],
 )
 
-# cc_test(
-#     name = "big_test",
-#     size = "medium",
-#     srcs = ["big_test.cc"],
-#     deps = [
-#         "//sfdb:modules",
-#         "//sfdb:service_impl",
-#         "@com_google_googletest//:gtest",
-#         "@com_google_googletest//:gtest_main",
-#         "@com_google_absl//absl/memory",
-#         "@com_google_absl//absl/strings",
-#         "@com_google_absl//absl/strings:str_format",
-#     ],
-# )
+cc_test(
+    name = "big_test",
+    size = "large",
+    srcs = ["big_test.cc"],
+    deps = [
+        "//sfdb:modules",
+        "//sfdb:service_impl",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
 
-# cc_test(
-#     name = "e2e_test",
-#     size = "small",
-#     srcs = ["e2e_test.cc"],
-#     deps = [
-#         "//sfdb:modules",
-#         "//sfdb:service_impl",
-#         "@com_google_googletest//:gtest",
-#         "@com_google_googletest//:gtest_main",
-#     ],
-# )
+cc_test(
+    name = "e2e_test",
+    size = "small",
+    srcs = ["e2e_test.cc"],
+    deps = [
+        "//sfdb:modules",
+        "//sfdb:service_impl",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
 
 # go_binary(
 #     name = "loadtest",

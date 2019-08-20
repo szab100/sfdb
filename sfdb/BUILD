@@ -15,21 +15,22 @@ load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
 # Binaries and MPMs
 # ------------------------------------------------------------------------------
 
-# cc_binary(
-#     name = "sfdb",
-#     srcs = ["main.cc"],
-#     deps = [
-#         ":flags",
-#         ":modules",
-#         ":service_impl",
-#         "//base",
-#         "@com_github_grpc_grpc//:grpc++",
-#         "@com_google_absl//absl/flags:flag",
-#         "@com_google_absl//absl/strings",
-#         "@com_google_absl//absl/time",
-#         "//util/thread",
-#     ],
-# )
+cc_binary(
+    name = "sfdb",
+    srcs = ["main.cc"],
+    deps = [
+        ":flags",
+        ":modules",
+        ":service_impl",
+        "//util/thread",
+        "@com_github_glog_glog//:glog",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/time",
+    ],
+)
 
 # ------------------------------------------------------------------------------
 # Protos
@@ -48,8 +49,8 @@ cc_proto_library(
 cc_grpc_library(
     name = "api_cc_grpc",
     srcs = [":api_proto"],
-    deps = [":api"],
     grpc_only = True,
+    deps = [":api"],
 )
 
 # go_proto_library(
@@ -74,31 +75,31 @@ cc_library(
     ],
 )
 
-# cc_library(
-#     name = "modules",
-#     srcs = ["modules.cc"],
-#     hdrs = ["modules.h"],
-#     deps = [
-#         ":flags",
-#         "//sfdb/base:db",
-#         "//sfdb/base:vars",
-#         "//sfdb/raft",
-#         "@com_github_grpc_grpc//:grpc++",
-#         "@com_google_absl//absl/flags:flag",
-#         "@com_google_absl//absl/memory",
-#         "@com_google_absl//absl/strings",
-#         "//util/time:clock",
-#     ],
-# )
+cc_library(
+    name = "modules",
+    srcs = ["modules.cc"],
+    hdrs = ["modules.h"],
+    deps = [
+        ":flags",
+        "//sfdb/base:db",
+        "//sfdb/base:vars",
+        "//sfdb/raft",
+        "//util/time:clock",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
+    ],
+)
 
-# cc_library(
-#     name = "service_impl",
-#     srcs = ["service_impl.cc"],
-#     hdrs = ["service_impl.h"],
-#     deps = [
-#         ":api_cc_grpc",
-#         ":modules",
-#         "//base",
-#         "//sfdb/base:replicated_db",
-#     ],
-# )
+cc_library(
+    name = "service_impl",
+    srcs = ["service_impl.cc"],
+    hdrs = ["service_impl.h"],
+    deps = [
+        ":api_cc_grpc",
+        ":modules",
+        "//sfdb/base:replicated_db",
+        "@com_github_glog_glog//:glog",
+    ],
+)

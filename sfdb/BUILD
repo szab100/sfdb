@@ -9,7 +9,7 @@ load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 package(default_visibility = ["//visibility:public"])
 
 # gRPC
-# load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
+load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
 
 # ------------------------------------------------------------------------------
 # Binaries and MPMs
@@ -45,12 +45,12 @@ cc_proto_library(
     deps = [":api_proto"],
 )
 
-# cc_grpc_library(
-#     name = "api_cc_grpc",
-#     srcs = [":api_proto"],
-#     deps = [":api"],
-#     grpc_only = True,
-# )
+cc_grpc_library(
+    name = "api_cc_grpc",
+    srcs = [":api_proto"],
+    deps = [":api"],
+    grpc_only = True,
+)
 
 # go_proto_library(
 #     name = "api_go_proto",
@@ -64,15 +64,15 @@ cc_proto_library(
 # Libraries
 # ------------------------------------------------------------------------------
 
-# cc_library(
-#     name = "flags",
-#     srcs = ["flags.cc"],
-#     hdrs = ["flags.h"],
-#     deps = [
-#         "//base",
-#         "@com_google_absl//absl/flags:flag",
-#     ],
-# )
+cc_library(
+    name = "flags",
+    srcs = ["flags.cc"],
+    hdrs = ["flags.h"],
+    deps = [
+        "//util/types",
+        "@com_google_absl//absl/flags:flag",
+    ],
+)
 
 # cc_library(
 #     name = "modules",

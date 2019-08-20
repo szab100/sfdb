@@ -1,0 +1,18 @@
+syntax = "proto2";
+
+package sfdb;
+
+// A Mutation is an entry in the RAFT log.
+//
+// Mutations are not necessarily idempotent.
+// The full list of mutations is enough to reconstruct the state of the
+// database -- by applying those mutations in order, at the correct simulated
+// timestamps.
+message Mutation {
+  // Every mutation takes place at a fixed point in time.
+  optional int64 time_nanos = 1;
+
+  // Raw SQL seems like the simplest representation.
+  // Might need to rethink this later.
+  optional string sql = 2;
+}

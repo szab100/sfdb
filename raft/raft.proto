@@ -1,0 +1,77 @@
+syntax = "proto2";
+
+package raft;
+
+message LogEntry {
+  // The term during which this entry was added to the log.
+  optional uint64 term = 1;
+
+  // An ID of this message that is unique within its replicated log.
+  optional uint64 id = 2;
+
+  // Client-specific contents of the log entry.
+  optional bytes msg = 3;
+}
+
+message RequestVoteRequest {
+  // Candidate's term.
+  optional uint64 term = 1;
+
+  // Candidate requesting the vote.
+  optional string candidate_id = 2;
+
+  // Index of candidate's last log entry.
+  optional uint64 last_log_index = 3;
+
+  // Term of candidate's last log entry.
+  optional uint64 last_log_term = 4;
+}
+
+message RequestVoteResponse{
+  // Current term for the candidate to update itself.
+  optional uint64 term = 1;
+
+  // Whether the candidate received the vote.
+  optional bool vote_granted = 2;
+}
+
+message AppendEntriesRequest {
+  // Leader's term.
+  optional uint64 term = 1;
+
+  // For followers to redirect clients.
+  optional string leader_id = 2;
+
+  // Index of log entry immediately preceeding the new ones.
+  optional uint64 prev_log_index = 3;
+
+  // The term of that log entry.
+  optional uint64 prev_log_term = 4;
+
+  // Log entries to store; empty for heartbeats.
+  repeated LogEntry entry = 5;
+
+  // Leader's commit index.
+  optional uint64 leader_commit = 6;
+}
+
+message AppendEntriesResponse {
+  // For leader to update itself.
+  optional uint64 term = 1;
+
+  // True if the follower contained an entry matching the term and index.
+  optional bool success = 2;
+}
+
+message AppendOnLeaderRequest {
+  optional LogEntry entry = 1;
+}
+
+message AppendOnLeaderResponse {}
+
+// Internal protocol used by RAFT members to talk to each other.
+service RaftService {
+  rpc RequestVote(RequestVoteRequest) returns (RequestVoteResponse);
+  rpc AppendEntries(AppendEntriesRequest) returns (AppendEntriesResponse);
+  rpc AppendOnLeader(AppendOnLeaderRequest) returns (AppendOnLeaderResponse);
+}

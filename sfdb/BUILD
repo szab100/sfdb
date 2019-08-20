@@ -27,7 +27,7 @@ package(default_visibility = ["//visibility:public"])
 #         "@com_google_absl//absl/flags:flag",
 #         "@com_google_absl//absl/strings",
 #         "@com_google_absl//absl/time",
-#         "//thread",
+#         "//util/thread",
 #     ],
 # )
 

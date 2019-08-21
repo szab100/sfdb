@@ -22,7 +22,6 @@
 #include "sfdb/engine/infer_result_types.h"
 
 #include <string>
-#include <unordered_map>
 
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"

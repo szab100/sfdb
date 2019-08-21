@@ -21,8 +21,6 @@
  */
 #include "util/task/status.h"
 
-#include <unordered_map>
-
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "glog/logging.h"

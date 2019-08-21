@@ -31,7 +31,7 @@ namespace google {
 namespace protobuf {
 class Message;
 }
-}
+} // namespace google
 
 namespace util {
 struct ParserConfig {
@@ -41,51 +41,60 @@ struct ParserConfig {
 
 class SourceLocation {
 public:
-  SourceLocation(uint32_t line, const char* file_name) : line_(line), file_name_(file_name) {}
-  constexpr uint32_t line() const { return line_; }
-  constexpr const char* file_name() const { return file_name_; }
+  SourceLocation(uint32_t line, const char *file_name)
+      : line_(line), file_name_(file_name) {}
+  uint32_t line() const { return line_; }
+  const char *file_name() const { return file_name_; }
+
 private:
   uint32_t line_;
-  const char* file_name_;
+  const char *file_name_;
 };
 
 namespace internal {
-bool ParseTextProto(absl::string_view asciipb, ParserConfig config, SourceLocation loc, google::protobuf::Message* msg, std::string* errors);
+bool ParseTextProto(absl::string_view asciipb, ParserConfig config,
+                    SourceLocation loc, google::protobuf::Message *msg,
+                    std::string *errors);
 } // namespace internal
 
 // NOTE: asciipb should have broader scope than instance of ParseTextProtoHelper
 class ParseTextProtoHelper {
 public:
-  template <typename T>
-  T Parse() const {
+  template <typename T> T Parse() const {
     T result;
     std::string errors;
-    CHECK(internal::ParseTextProto(text_, config_, loc_, &result, &errors)) << errors;
+    CHECK(internal::ParseTextProto(text_, config_, loc_, &result, &errors))
+        << errors;
     return result;
   }
 
-  template <typename T>
-  operator T() const {
-    return Parse<T>();
-  }
+  template <typename T> operator T() const { return Parse<T>(); }
+
 private:
-  ParseTextProtoHelper(absl::string_view asciipb, ParserConfig config, SourceLocation loc)
-  : text_(asciipb), config_(config), loc_(loc) {}
+  ParseTextProtoHelper(absl::string_view asciipb, ParserConfig config,
+                       SourceLocation loc)
+      : text_(asciipb), config_(config), loc_(loc) {}
+
 private:
   absl::string_view text_;
   ParserConfig config_;
   SourceLocation loc_;
 
-  friend ParseTextProtoHelper ParseTextProtoOrDie(absl::string_view asciipb, ParserConfig config, SourceLocation loc);
+  friend ParseTextProtoHelper ParseTextProtoOrDie(absl::string_view asciipb,
+                                                  ParserConfig config,
+                                                  SourceLocation loc);
 };
 
-ParseTextProtoHelper ParseTextProtoOrDie(absl::string_view asciipb, ParserConfig config, SourceLocation loc) {
+ParseTextProtoHelper ParseTextProtoOrDie(absl::string_view asciipb,
+                                         ParserConfig config,
+                                         SourceLocation loc) {
   return ParseTextProtoHelper(asciipb, config, loc);
 }
 
-}
+} // namespace util
 
-#define PARSE_TEST_PROTO(asciipb) \
-  ::util::ParseTextProtoOrDie(asciipb, {}, ::util::SourceLocation(__LINE__, __FILE__))
+#define PARSE_TEST_PROTO(asciipb)                                              \
+  ::util::ParseTextProtoOrDie(asciipb, {},                                     \
+                              ::util::SourceLocation(__LINE__, __FILE__))
 
 #endif // UTIL_PROTO_PARSE_TEXT_PROTO_H_

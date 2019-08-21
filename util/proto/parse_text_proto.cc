@@ -21,9 +21,9 @@
  */
 #include <vector>
 
-#include "google/protobuf/text_format.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/text_format.h"
 #include "util/proto/parse_text_proto.h"
 
 namespace util {
@@ -32,37 +32,36 @@ using namespace ::google::protobuf;
 
 class DefaultErrorCollector : public io::ErrorCollector {
 public:
-    void AddError(int line, int column, const string& message) override {
-    }
+  void AddError(int line, int column, const string &message) override {}
 
-    void AddWarning(int line, int column, const string& message) override {
-    }
+  void AddWarning(int line, int column, const string &message) override {}
 
-    // TODO: implement
-    const std::string errors() const { return ""; }
+  // TODO: implement
+  const std::string errors() const { return ""; }
 };
 } // namespace
 
 namespace internal {
-bool ParseTextProto(absl::string_view asciipb, ParserConfig config, SourceLocation loc, Message* msg, string* errors) {
-    TextFormat::Parser parser;
-    parser.AllowPartialMessage(config.allow_partial_messages);
-    parser.AllowUnknownExtension(config.allow_unknown_extensions);
-    DefaultErrorCollector error_collector;
-    parser.RecordErrorsTo(&error_collector);
+bool ParseTextProto(absl::string_view asciipb, ParserConfig config,
+                    SourceLocation loc, Message *msg, string *errors) {
+  TextFormat::Parser parser;
+  parser.AllowPartialMessage(config.allow_partial_messages);
+  parser.AllowUnknownExtension(config.allow_unknown_extensions);
+  DefaultErrorCollector error_collector;
+  parser.RecordErrorsTo(&error_collector);
 
-    io::ArrayInputStream asciipb_istream(asciipb.data(), asciipb.size());
-    if (parser.Parse(&asciipb_istream, msg)) {
-        return true;
-    }
+  io::ArrayInputStream asciipb_istream(asciipb.data(), asciipb.size());
+  if (parser.Parse(&asciipb_istream, msg)) {
+    return true;
+  }
 
-    msg->Clear();
+  msg->Clear();
 
-    if (errors) {
-        *errors = error_collector.errors();
-    }
+  if (errors) {
+    *errors = error_collector.errors();
+  }
 
-    return false;
+  return false;
 }
 } // namespace internal
 } // namespace util

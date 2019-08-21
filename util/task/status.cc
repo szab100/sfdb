@@ -34,32 +34,45 @@ namespace util {
 
 namespace {
 
-const std::unordered_map<::util::error::Code, ::grpc::StatusCode>
-    kGrpcStatusCodeMap = {
-        std::make_pair(::util::error::OK, ::grpc::OK),
-        std::make_pair(::util::error::CANCELLED, ::grpc::CANCELLED),
-        std::make_pair(::util::error::UNKNOWN, ::grpc::UNKNOWN),
-        std::make_pair(::util::error::INVALID_ARGUMENT,
-                       ::grpc::INVALID_ARGUMENT),
-        std::make_pair(::util::error::DEADLINE_EXCEEDED,
-                       ::grpc::DEADLINE_EXCEEDED),
-        std::make_pair(::util::error::NOT_FOUND, ::grpc::NOT_FOUND),
-        std::make_pair(::util::error::ALREADY_EXISTS, ::grpc::ALREADY_EXISTS),
-        std::make_pair(::util::error::PERMISSION_DENIED,
-                       ::grpc::PERMISSION_DENIED),
-        std::make_pair(::util::error::PERMISSION_DENIED,
-                       ::grpc::UNAUTHENTICATED),
-        std::make_pair(::util::error::RESOURCE_EXHAUSTED,
-                       ::grpc::RESOURCE_EXHAUSTED),
-        std::make_pair(::util::error::FAILED_PRECONDITION,
-                       ::grpc::FAILED_PRECONDITION),
-        std::make_pair(::util::error::ABORTED, ::grpc::ABORTED),
-        std::make_pair(::util::error::OUT_OF_RANGE, ::grpc::OUT_OF_RANGE),
-        std::make_pair(::util::error::UNIMPLEMENTED, ::grpc::UNIMPLEMENTED),
-        std::make_pair(::util::error::INTERNAL, ::grpc::INTERNAL),
-        std::make_pair(::util::error::UNAVAILABLE, ::grpc::UNAVAILABLE),
-        std::make_pair(::util::error::DATA_LOSS, ::grpc::DATA_LOSS),
-};
+::grpc::StatusCode ConvertToGRPCErrorCode(int code) {
+  switch (code) {
+    case ::util::error::OK:
+      return ::grpc::OK;
+    case ::util::error::CANCELLED:
+      return ::grpc::CANCELLED;
+    case ::util::error::UNKNOWN:
+      return ::grpc::UNKNOWN;
+    case ::util::error::INVALID_ARGUMENT:
+      return ::grpc::INVALID_ARGUMENT;
+    case ::util::error::DEADLINE_EXCEEDED:
+      return ::grpc::DEADLINE_EXCEEDED;
+    case ::util::error::NOT_FOUND:
+      return ::grpc::NOT_FOUND;
+    case ::util::error::ALREADY_EXISTS:
+      return ::grpc::ALREADY_EXISTS;
+    case ::util::error::PERMISSION_DENIED:
+      return ::grpc::PERMISSION_DENIED;
+    case ::util::error::RESOURCE_EXHAUSTED:
+      return ::grpc::RESOURCE_EXHAUSTED;
+    case ::util::error::FAILED_PRECONDITION:
+      return ::grpc::FAILED_PRECONDITION;
+    case ::util::error::ABORTED:
+      return ::grpc::ABORTED;
+    case ::util::error::OUT_OF_RANGE:
+      return ::grpc::OUT_OF_RANGE;
+    case ::util::error::UNIMPLEMENTED:
+      return ::grpc::UNIMPLEMENTED;
+    case ::util::error::INTERNAL:
+      return ::grpc::INTERNAL;
+    case ::util::error::UNAVAILABLE:
+      return ::grpc::UNAVAILABLE;
+    case ::util::error::DATA_LOSS:
+      return ::grpc::DATA_LOSS;
+    default:
+      LOG(ERROR) << "Can not convert util::error::Code to grpc::StatusCode";
+      return ::grpc::UNKNOWN;
+  }
+}
 
 const Status& GetOk() {
   static const Status status;
@@ -114,11 +127,7 @@ extern ostream& operator<<(ostream& os, const Status& other) {
 }
 
 Status::operator ::grpc::Status() const {
-  auto it = kGrpcStatusCodeMap.find(this->code_);
-
-  return ::grpc::Status(
-      it != kGrpcStatusCodeMap.end() ? it->second : ::grpc::UNKNOWN,
-      this->error_message());
+  return ::grpc::Status(ConvertToGRPCErrorCode(code()), this->error_message());
 }
 
 }  // namespace util

@@ -36,6 +36,8 @@
 
 namespace testing {
 
+template <typename Req, typename Response> class RPCCallTestHelper;
+
 template <typename T>
 class ResponseReaderMock : public grpc::ClientAsyncResponseReaderInterface<T> {
 public:
@@ -75,23 +77,35 @@ public:
     status_ = status;
   }
 
-  void SetCallCount(size_t count) { max_call_count_ = count; }
+private:
+  void SetExpectsCall(size_t count) {
+    EXPECT_CALL(*this, StartCall())
+        .Times(count)
+        .WillRepeatedly(Invoke([this]() -> void { ++start_call_count_; }));
 
-  ~ResponseReaderMock() {
-    if (max_call_count_ > 0) {
-      EXPECT_EQ(finish_call_count_, max_call_count_)
-          << "StartCall() is expected to be called " << max_call_count_
-          << " times";
-      EXPECT_EQ(start_call_count_, max_call_count_)
-          << "StartCall() is expected to be called " << max_call_count_
-          << " times";
-    }
+    EXPECT_CALL(*this, Finish(_, _, _))
+        .Times(count)
+        .WillRepeatedly(Invoke([this](T *responce_out, grpc::Status *status_out,
+                                      void *tag) {
+          ++finish_call_count_;
+          EXPECT_TRUE(start_call_count_ == finish_call_count_);
+          CHECK(!!response_ || !status_.ok())
+              << "Successfull RPC should have a valid response message";
+          if (response_) {
+            *responce_out = *response_.get();
+          }
+          *status_out = status_;
+          auto rpc = reinterpret_cast<::util::CompletionCallbackIntf *>(tag);
+          rpc->HandleRequestComplete();
+        }));
   }
 
 private:
   std::unique_ptr<T> response_;
   grpc::Status status_;
   size_t start_call_count_, finish_call_count_, max_call_count_;
+
+  template <typename Req, typename Response> friend class RPCCallTestHelper;
 };
 
 // template to get clean type of argument
@@ -188,7 +202,7 @@ public:
 
   RPCCallTestHelper &Times(size_t times) {
     CHECK(!!response_reader_);
-    response_reader_->SetCallCount(times);
+    response_reader_->SetExpectsCall(times);
 
     return *this;
   }

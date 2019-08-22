@@ -1,0 +1,16 @@
+DROP TABLE LoadTest;
+
+CREATE TABLE LoadTest (vm_id int64, location string, heartbeat_nanos int64);
+CREATE INDEX ById ON LoadTest (vm_id);
+
+INSERT INTO LoadTest (vm_id, location) VALUES (37359, 'sfo');
+INSERT INTO LoadTest (vm_id, location) VALUES (3735, 'ny');
+INSERT INTO LoadTest (vm_id, location) VALUES (373, 'chicago');
+INSERT INTO LoadTest (vm_id, location) VALUES (37, 'toronto');
+INSERT INTO LoadTest (vm_id, location) VALUES (19, 'test_10');
+INSERT INTO LoadTest (vm_id, location) VALUES (20, '_10: some data');
+INSERT INTO LoadTest (vm_id, location) VALUES (21, 'abcdefghijklmnopqrstuvwxyz');
+
+UPDATE LoadTest SET heartbeat_nanos = 1560377459271374784 WHERE vm_id = 373;
+
+SELECT vm_id, location, heartbeat_nanos FROM LoadTest;

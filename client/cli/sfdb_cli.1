@@ -1,0 +1,25 @@
+.TH SFDB CLI 1
+.SH NAME
+SFDB CLI \- interactive client for SFDB database
+.SH SYNOPSIS
+.B sfdb_cli
+[B\-\-hostR IADDRESSR]
+.SH DESCRIPTION
+.B sfdb_cli
+receives SFDB SQL commands and sends RPC requests to SFDB server.
+.SH OPTIONS
+.IP "-\-host=address"
+SFDB host address.
+Can be BNS path or in IPv4:PORT, IPv6:PORT.
+.IP "-\-filepath=filepath"
+Absolute filepath to input file with SFDB SQL commands.
+Will be read and execute line by line, unless
+.B -\-async
+is set. By default, SFDB CLI provides with the interactive "shell" like interface.
+.IP "-\-async=true"
+Boolean flag whether to execute SFDB SQL commands async (go routines are created).
+Works only when -\-file is provided. By default is false.
+.SH BUGS
+Strings with quotes are not parsed properly. Strings with quotes are not drawn in table properly.
+.SH AUTHOR
+somebody

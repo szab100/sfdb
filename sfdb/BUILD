@@ -53,13 +53,13 @@ cc_grpc_library(
     deps = [":api"],
 )
 
-# go_proto_library(
-#     name = "api_go_proto",
-#     compiler = "@io_bazel_rules_go//proto:go_grpc",
-#     importpath = "github.com/googlegsa/sfdb/api_go_proto",
-#     proto = ":api_proto",
-#     visibility = ["//visibility:public"],
-# )
+go_proto_library(
+    name = "api_go_proto",
+    compiler = "@io_bazel_rules_go//proto:go_grpc",
+    importpath = "github.com/googlegsa/sfdb/api_go_proto",
+    proto = ":api_proto",
+    visibility = ["//visibility:public"],
+)
 
 # ------------------------------------------------------------------------------
 # Libraries

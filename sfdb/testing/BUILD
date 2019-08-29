@@ -39,19 +39,19 @@ cc_test(
     ],
 )
 
-# go_binary(
-#     name = "loadtest",
-#     embed = [":go_default_library"],
-#     importpath = "github.com/googlegsa/sfdb/sfdb/testing",
-# )
+go_binary(
+    name = "loadtest",
+    embed = [":go_default_library"],
+    importpath = "github.com/googlegsa/sfdb/sfdb/testing",
+)
 
-# go_library(
-#     name = "go_default_library",
-#     srcs = ["loadtest.go"],
-#     importpath = "github.com/googlegsa/sfdb/sfdb/testing",
-#     deps = [
-#         "//sfdb:api_go_proto",
-#         "@com_github_golang_glog//:go_default_library",
-#         "@org_golang_google_grpc//:go_default_library",
-#     ],
-# )
+go_library(
+    name = "go_default_library",
+    srcs = ["loadtest.go"],
+    importpath = "github.com/googlegsa/sfdb/sfdb/testing",
+    deps = [
+        "//sfdb:api_go_proto",
+        "@com_github_golang_glog//:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+    ],
+)

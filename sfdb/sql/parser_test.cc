@@ -38,6 +38,11 @@ using ::testing::HasSubstr;
 using ::util::IsInvalidArgument;
 using ::util::StatusOr;
 
+TEST(ParserTest, ShowTables) {
+  std::unique_ptr<Ast> ast = Parse("SHOW TABLES;").ValueOrDie();
+  EXPECT_EQ(Ast::SHOW_TABLES, ast->type);
+}
+
 TEST(ParserTest, DropTable) {
   std::unique_ptr<Ast> ast = Parse("DROP TABLE Blah;").ValueOrDie();
   EXPECT_EQ(Ast::DROP_TABLE, ast->type);

@@ -39,6 +39,7 @@
 #include "sfdb/engine/proto_streams.h"
 #include "sfdb/engine/select.h"
 #include "sfdb/engine/update.h"
+#include "sfdb/engine/utils.h"
 #include "sfdb/opt/opt.h"
 #include "util/task/canonical_errors.h"
 
@@ -61,6 +62,17 @@ using ::util::StatusOr;
 
 }  // namespace
 
+StatusOr<std::unique_ptr<ProtoStream>> GetProtoStream(const TypedAst &ast,
+                                                      ProtoPool *pool,
+                                                      const Db *db) {
+  switch(ast.type) {
+    case Ast::Type::SHOW_TABLES:
+      return ExecuteShowTables(ast, db);
+    default:
+      return ExecuteSelect(ast, pool, db);
+  }
+}
+
 Status ExecuteRead(
     std::unique_ptr<Ast> &&ast, ProtoPool *pool, const Db *db,
     std::vector<std::unique_ptr<Message>> *rows) {
@@ -72,8 +84,8 @@ Status ExecuteRead(
   if (!so.ok()) return so.status();
 
   std::unique_ptr<TypedAst> oast = Optimize(*db, std::move(so.ValueOrDie()));
-
   StatusOr<std::unique_ptr<ProtoStream>> so2 = GetProtoStream(*oast, pool, db);
+
   if (!so2.ok()) return so2.status();
 
   ProtoStream &ps = *so2.ValueOrDie();

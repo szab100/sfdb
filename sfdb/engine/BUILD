@@ -49,6 +49,7 @@ cc_library(
         ":proto_streams",
         ":select",
         ":update",
+        ":utils",
         "//sfdb/base:ast",
         "//sfdb/base:ast_type",
         "//sfdb/base:db",
@@ -123,6 +124,24 @@ cc_library(
         "//sfdb/base:proto_stream",
         "//sfdb/base:typed_ast",
         "//sfdb/base:vars",
+        "//sfdb/proto:pool",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+cc_library(
+    name = "utils",
+    srcs = ["utils.cc"],
+    hdrs = ["utils.h"],
+    deps = [
+        ":expressions",
+        ":proto_streams",
+        "//sfdb/base:db",
+        "//sfdb/base:proto_stream",
+        "//sfdb/base:typed_ast",
         "//sfdb/proto:pool",
         "//util/task:status",
         "//util/task:statusor",

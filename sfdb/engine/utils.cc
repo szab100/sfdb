@@ -19,24 +19,32 @@
  * under the License.
  *
  */
-#ifndef SFDB_ENGINE_SELECT_H_
-#define SFDB_ENGINE_SELECT_H_
+#include "sfdb/engine/utils.h"
 
 #include <memory>
 
-#include "absl/base/thread_annotations.h"
-#include "sfdb/base/db.h"
-#include "sfdb/base/proto_stream.h"
-#include "sfdb/base/typed_ast.h"
-#include "sfdb/proto/pool.h"
-#include "util/task/statusor.h"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/empty.pb.h"
+#include "sfdb/base/vars.h"
+#include "sfdb/engine/expressions.h"
+#include "sfdb/engine/proto_streams.h"
+#include "util/task/canonical_errors.h"
 
 namespace sfdb {
-
-::util::StatusOr<std::unique_ptr<ProtoStream>> ExecuteSelect(
-    const TypedAst &ast, ProtoPool *pool, const Db *db)
-    SHARED_LOCKS_REQUIRED(db->mu);
-
+namespace {
+using ::absl::StrCat;
+using ::util::InternalError;
+using ::util::NotFoundError;
+using ::util::Status;
+using ::util::StatusOr;
 }  // namespace
 
-#endif  // SFDB_ENGINE_SELECT_H_
+StatusOr<std::unique_ptr<ProtoStream>> ExecuteShowTables(
+    const TypedAst &ast, const Db *db) SHARED_LOCKS_REQUIRED(db->mu) {
+  auto scheme = db->GetTableList();
+  return std::unique_ptr<ProtoStream>(new TableProtoStream(scheme));
+}
+
+}  // namespace sfdb

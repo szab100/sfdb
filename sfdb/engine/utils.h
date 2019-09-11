@@ -19,8 +19,8 @@
  * under the License.
  *
  */
-#ifndef SFDB_ENGINE_SELECT_H_
-#define SFDB_ENGINE_SELECT_H_
+#ifndef SFDB_ENGINE_UTILS_H_
+#define SFDB_ENGINE_UTILS_H_
 
 #include <memory>
 
@@ -33,10 +33,9 @@
 
 namespace sfdb {
 
-::util::StatusOr<std::unique_ptr<ProtoStream>> ExecuteSelect(
-    const TypedAst &ast, ProtoPool *pool, const Db *db)
-    SHARED_LOCKS_REQUIRED(db->mu);
+::util::StatusOr<std::unique_ptr<ProtoStream>> ExecuteShowTables(
+    const TypedAst &ast, const Db *db) SHARED_LOCKS_REQUIRED(db->mu);
 
 }  // namespace
 
-#endif  // SFDB_ENGINE_SELECT_H_
+#endif  // SFDB_ENGINE_UTILS_H_

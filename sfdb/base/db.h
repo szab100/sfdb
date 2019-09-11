@@ -123,6 +123,10 @@ struct Db {
       EXCLUSIVE_LOCKS_REQUIRED(mu);
   bool DropTable(::absl::string_view name) EXCLUSIVE_LOCKS_REQUIRED(mu);
 
+  // Caller owns retult object
+  const Table *GetTableList() const SHARED_LOCKS_REQUIRED(mu);
+  const ::google::protobuf::Descriptor* GetTableListTableType() const;
+
   // Table indices.
   TableIndex *FindIndex(::absl::string_view index_name) const
       SHARED_LOCKS_REQUIRED(mu);
@@ -130,6 +134,25 @@ struct Db {
                        std::vector<const ::google::protobuf::FieldDescriptor*> &&columns)
       EXCLUSIVE_LOCKS_REQUIRED(mu);
   bool DropIndex(::absl::string_view index_name) EXCLUSIVE_LOCKS_REQUIRED(mu);
+private:
+  // TODO: move this functionality to separate class
+
+  // This functions caches a list of tables into Table instance table_list_.
+  void UpdateTableList() const;
+  // This function creates a table to store the list of tables in this database.
+  void CreateTableListTable() const;
+
+  // This function creates/updates a table which will contain table structure description.
+  // Should be called by internal functions when table is created or its structure changes.
+  void UpdateTableDescritption(const Table* table);
+  void RemoveTableDescritption(const std::string& table_name);
+
+  // Variables to hold cached list of tables.
+  mutable bool scheme_changed_;
+  mutable std::unique_ptr<Table> table_list_ GUARDED_BY(mu);
+
+  // Used to store tables descriptions for DESCRIBE <table> queries.
+  std::map<std::string, std::unique_ptr<Table>> table_descs_ GUARDED_BY(mu);
 };
 
 }  // namespace sfdb

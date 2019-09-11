@@ -45,6 +45,7 @@ std::string Ast::TypeToString(Type t) {
   switch (t) {
 #define C(x) case x: return #x
     C(ERROR);
+    C(SHOW_TABLES);
     C(CREATE_TABLE); C(CREATE_INDEX); C(DROP_TABLE); C(DROP_INDEX);
     C(INSERT); C(UPDATE); C(SINGLE_EMPTY_ROW); C(TABLE_SCAN); C(INDEX_SCAN);
     C(INDEX_SCAN_BOUND_EXCLUSIVE); C(INDEX_SCAN_BOUND_INCLUSIVE);

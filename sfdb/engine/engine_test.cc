@@ -207,5 +207,43 @@ TEST(EngineTest, CreateAndDrop) {
   }
 }
 
+TEST(EngineTest, ShowTables) {
+  ProtoPool pool;
+  BuiltIns vars;
+  Db db("Test", &vars);
+  std::vector<std::unique_ptr<Message>> rows;
+  ASSERT_OK(Execute(Parse(
+      "SHOW TABLES;")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_EQ(0, rows.size());
+
+  ASSERT_OK(Execute(Parse(
+      "CREATE TABLE People (name string, age int64);")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_OK(Execute(Parse(
+      "CREATE TABLE Addresses (address string, contact_id int64);")
+      .ValueOrDie(), &pool, &db, &rows));
+
+  ASSERT_OK(Execute(Parse(
+      "SHOW TABLES;")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_EQ(2, rows.size());
+  // TODO: this check relies on the order of records, which might change
+  EXPECT_EQ("table_name: \"People\"", rows[1]->ShortDebugString());
+  EXPECT_EQ("table_name: \"Addresses\"", rows[0]->ShortDebugString());
+
+  ASSERT_OK(Execute(Parse(
+      "DROP TABLE People;")
+      .ValueOrDie(), &pool, &db, &rows));
+
+  rows.clear();
+
+  ASSERT_OK(Execute(Parse(
+      "SHOW TABLES;")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_EQ(1, rows.size());
+  EXPECT_EQ("table_name: \"Addresses\"", rows[0]->ShortDebugString());
+}
+
 }  // namespace
 }  // namespace sfdb

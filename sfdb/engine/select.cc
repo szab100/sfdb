@@ -64,7 +64,7 @@ StatusOr<std::unique_ptr<ProtoStream>> GetFilterProtoStream(
     const TypedAst &ast, ProtoPool *pool, const Db *db)
     SHARED_LOCKS_REQUIRED(db->mu) {
   StatusOr<std::unique_ptr<ProtoStream>> so =
-      GetProtoStream(*ast.rhs(), pool, db);
+      ExecuteSelect(*ast.rhs(), pool, db);
   if (!so.ok()) return so.status();
 
   const TypedAst &pred_ast = *ast.lhs();
@@ -104,7 +104,7 @@ StatusOr<std::unique_ptr<ProtoStream>> GetMapProtoStream(
 
   // Get the source of protos.
   StatusOr<std::unique_ptr<ProtoStream>> so =
-      GetProtoStream(*ast.rhs(), pool, db);
+      ExecuteSelect(*ast.rhs(), pool, db);
   if (!so.ok()) return so.status();
 
   // Define the map function.
@@ -130,7 +130,7 @@ StatusOr<std::unique_ptr<ProtoStream>> GetMapProtoStream(
 
 }  // namespace
 
-StatusOr<std::unique_ptr<ProtoStream>> GetProtoStream(
+StatusOr<std::unique_ptr<ProtoStream>> ExecuteSelect(
     const TypedAst &ast, ProtoPool *p, const Db *db) {
   switch (ast.type) {
     case Ast::ERROR:

@@ -27,6 +27,7 @@
 
 #include "absl/memory/memory.h"
 #include "glog/logging.h"
+#include "util/task/statusor.h"
 
 namespace sfdb {
 namespace {
@@ -38,8 +39,32 @@ using ::absl::make_unique;
 using ::absl::string_view;
 using ::google::protobuf::Descriptor;
 using ::google::protobuf::FieldDescriptor;
+using ::google::protobuf::FieldDescriptorProto;
 using ::google::protobuf::Message;
 using ::google::protobuf::Reflection;
+using ::util::StatusOr;
+
+const std::string kTableListProtoName = "__DB_TABLE_LIST__";
+const std::string kTableDescProtoName = "__DB_TABLE_DESC__";
+
+// Utility functions to build descriptors for internal DB tables.
+
+const ::google::protobuf::Descriptor *BuildTableListDescriptor(ProtoPool *p) {
+  const std::vector<std::pair<std::string, FieldDescriptor::Type>> fields = {
+      {"table_name", FieldDescriptor::TYPE_STRING},
+  };
+
+  return p->CreateProtoClass(kTableListProtoName, fields).ValueOrDie();
+}
+
+const ::google::protobuf::Descriptor *BuildTableDescDescriptor(ProtoPool *p) {
+  const std::vector<std::pair<std::string, FieldDescriptor::Type>> fields = {
+      {"field_name", FieldDescriptor::TYPE_STRING},
+      {"field_type", FieldDescriptor::TYPE_STRING},
+  };
+
+  return p->CreateProtoClass(kTableDescProtoName, fields).ValueOrDie();
+}
 
 }  // namespace
 
@@ -60,12 +85,93 @@ Table *Db::PutTable(string_view name, std::unique_ptr<ProtoPool> &&pool,
                     const Descriptor *type) {
   const std::string name_str(name);
   CHECK(!tables.count(name_str));
-  return (tables[name_str] = make_unique<Table>(
+  auto new_table_ptr = (tables[name_str] = make_unique<Table>(
       name, std::move(pool), type)).get();
+  scheme_changed_ = true;
+  return new_table_ptr;
 }
 
-Db::Db(string_view name, Vars *root_vars) :
-    name(name), pool(new ProtoPool), vars(root_vars->Branch()) {
+void Db::UpdateTableList() const {
+  table_list_->rows.clear();
+  const auto field = table_list_->type->FindFieldByNumber(1);
+  CHECK(!!field);
+
+  for (const auto& i : tables) {
+    auto row = table_list_->pool->NewMessage(table_list_->type);
+    auto reflection = row->GetReflection();
+    reflection->SetString(row.get(), field, i.first);
+
+    table_list_->rows.emplace_back(std::move(row));
+  }
+}
+
+void Db::CreateTableListTable() const {
+  std::unique_ptr<ProtoPool> table_pool = pool->Branch();
+  auto table_list_descriptor = BuildTableListDescriptor(pool.get());
+  table_list_ = absl::make_unique<Table>(kTableListProtoName, std::move(table_pool),
+    table_list_descriptor);
+}
+
+void Db::UpdateTableDescritption(const Table* table) {
+  Table *t = nullptr;
+
+  // Find table which contains descritption, if it is not found - create new.
+  auto it = table_descs_.find(table->name);
+  if (it == table_descs_.end()) {
+    std::unique_ptr<ProtoPool> table_pool = pool->Branch();
+    auto table_description_descriptor = BuildTableDescDescriptor(pool.get());
+    t = (table_descs_[table->name] = absl::make_unique<Table>(absl::StrCat(kTableListProtoName, table->name),
+      std::move(table_pool), table_description_descriptor)).get();
+  } else {
+    t = it->second.get();
+  }
+
+  // Fill table with descriptiot of requested table.
+
+  int field_count = table->type->field_count();
+
+  // Cache fields from description table.
+  const auto name_field = t->type->FindFieldByNumber(1);
+  CHECK(!!name_field);
+  const auto type_field = t->type->FindFieldByNumber(2);
+  CHECK(!!type_field);
+
+  t->rows.clear();
+  for (int i = 0; i < field_count; ++i) {
+    auto row = t->pool->NewMessage(t->type);
+    auto reflection = row->GetReflection();
+    reflection->SetString(row.get(), name_field, table->type->field(i)->name());
+    reflection->SetString(row.get(), type_field, table->type->field(i)->type_name());
+
+    t->rows.push_back(std::move(row));
+  }
+}
+
+
+void Db::RemoveTableDescritption(const std::string& table_name) {
+  auto it = table_descs_.find(table_name);
+  CHECK(it != table_descs_.end());
+}
+
+const ::google::protobuf::Descriptor* Db::GetTableListTableType() const {
+  return table_list_->type;
+}
+const Table *Db::GetTableList() const {
+  if (scheme_changed_) {
+    UpdateTableList();
+    scheme_changed_ = false;
+  }
+
+  return table_list_.get();
+}
+
+Db::Db(string_view name, Vars *root_vars)
+    : name(name),
+      pool(new ProtoPool),
+      vars(root_vars->Branch()),
+      scheme_changed_(false) {
+  // Cretae DB internal tables
+  CreateTableListTable();
 }
 
 bool Db::DropTable(string_view name) {
@@ -77,6 +183,7 @@ bool Db::DropTable(string_view name) {
   while (!t->indices.empty()) CHECK(DropIndex(t->indices.begin()->first));
 
   CHECK(tables.erase(std::string(name)));
+  scheme_changed_ = true;
   return true;
 }
 

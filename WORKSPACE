@@ -36,7 +36,7 @@ git_repository(
     name = "com_github_glog_glog",
     remote = "https://github.com/google/glog.git",
     commit = "3106945d8d3322e5cbd5658d482c9ffed2d892c0",
-    shallow_since = "1516118775 +0100"
+    #shallow_since = "1516118775 +0100"
 )
 
 git_repository(

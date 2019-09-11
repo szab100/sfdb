@@ -59,10 +59,13 @@ class StatusOr {
   inline StatusOr(T&& value);       // NOLINT
 
   StatusOr(StatusOr&& other)
-      : status_(std::move(other.status_)), value_(std::move(other.value_)){};
+      : status_(std::move(other.status_)), value_(std::move(other.value_)) {
+  };
+
   StatusOr& operator=(StatusOr&& other) {
+    TryMoveValueFromOtherStatus(status_, other.status_, other.value_);
     status_ = std::move(other.status_);
-    value_ = std::move(other.value_);
+
     return *this;
   }
 
@@ -109,11 +112,19 @@ class StatusOr {
   // inline StatusOr(const StatusOr<U>& other);
 
   // Assignment operator.
-  inline const StatusOr& operator=(const StatusOr& other);
+  inline const StatusOr& operator=(const StatusOr& other) {
+    TryCopyValueFromOtherStatus(status_, other.status_, other.value_);
+    status_ = other.status_;
+    return *this;
+  }
 
   // Conversion assignment operator, T must be assignable from U
   template <typename U>
-  inline const StatusOr& operator=(const StatusOr<U>& other);
+  inline const StatusOr& operator=(const StatusOr<U>& other) {
+    TryCopyValueFromOtherStatus(status_, other.status_, other.value_);
+    status_ = other.status_;
+    return *this;
+  }
 
   // Accessors.
   inline const ::util::Status& status() const { return status_; }
@@ -149,6 +160,37 @@ class StatusOr {
   }
 
  private:
+  // This function will initialize value object to default state if needed and
+  // then will do move of others status value only if others status was valid.
+  template <typename U>
+  inline void TryMoveValueFromOtherStatus(const Status& prev_status,
+    const Status& other_status, U&& other_value) {
+    if (other_status.ok()) {
+      // Take special care about moving value as it may be not constructed yet.
+      if (!prev_status.ok()) {
+        // Initialize value and move other value
+        new(&value_) T(std::move(other_value));
+      } else {
+        // Value should be initialized already, so just move
+        value_ = std::move(other_value);
+      }
+    }
+  }
+
+  template <typename U>
+  inline void TryCopyValueFromOtherStatus(const Status& prev_status,
+    const Status& other_status, const U& other_value) {
+    if (other_status.ok()) {
+      // Take special care about moving value as it may be not constructed yet.
+      if (!prev_status.ok()) {
+        // Initialize value and copy other value
+        new(&value_) T{other_value};
+      } else {
+        // Value should be initialized already, so just copy
+        value_ = other_value;
+      }
+    }
+  }
   Status status_;
   struct Dummy {};
   union {
@@ -165,7 +207,7 @@ class StatusOr {
 // Implementation.
 
 template <typename T>
-inline StatusOr<T>::StatusOr() : status_(::util::error::UNKNOWN, "") {}
+inline StatusOr<T>::StatusOr() : status_(Status::UNKNOWN) {}
 
 template <typename T>
 inline StatusOr<T>::StatusOr(const ::util::Status& status) : status_(status) {
@@ -173,10 +215,12 @@ inline StatusOr<T>::StatusOr(const ::util::Status& status) : status_(status) {
 }
 
 template <typename T>
-inline StatusOr<T>::StatusOr(const T& value) : value_(value) {}
+inline StatusOr<T>::StatusOr(const T& value)
+  : status_(::util::error::OK, ""), value_(value) {}
 
 template <typename T>
-inline StatusOr<T>::StatusOr(T&& value) : value_(std::move(value)) {}
+inline StatusOr<T>::StatusOr(T&& value)
+  : status_(::util::error::OK, ""), value_(std::move(value)) {}
 
 template <typename T>
 inline StatusOr<T>::StatusOr(const ::util::Status& status, const T& value)
@@ -185,25 +229,6 @@ inline StatusOr<T>::StatusOr(const ::util::Status& status, const T& value)
 template <typename T>
 inline StatusOr<T>::StatusOr(const ::util::Status& status, T&& value)
     : status_(status), value_(std::move(value)) {}
-
-template <typename T>
-inline const StatusOr<T>& StatusOr<T>::operator=(const StatusOr& other) {
-  status_ = other.status_;
-  if (status_.ok()) {
-    value_ = other.value_;
-  }
-  return *this;
-}
-
-template <typename T>
-template <typename U>
-inline const StatusOr<T>& StatusOr<T>::operator=(const StatusOr<U>& other) {
-  status_ = other.status_;
-  if (status_.ok()) {
-    value_ = other.value_;
-  }
-  return *this;
-}
 
 }  // namespace util
 

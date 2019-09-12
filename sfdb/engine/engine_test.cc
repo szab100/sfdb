@@ -245,5 +245,27 @@ TEST(EngineTest, ShowTables) {
   EXPECT_EQ("table_name: \"Addresses\"", rows[0]->ShortDebugString());
 }
 
+TEST(EngineTest, DescribeTable) {
+  ProtoPool pool;
+  BuiltIns vars;
+  Db db("Test", &vars);
+  std::vector<std::unique_ptr<Message>> rows;
+
+  ASSERT_OK(Execute(Parse(
+      "CREATE TABLE People (name string, age int64);")
+      .ValueOrDie(), &pool, &db, &rows));
+
+  ASSERT_OK(Execute(Parse(
+      "DESCRIBE People;")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_EQ(2, rows.size());
+  EXPECT_EQ("field_name: \"name\" field_type: \"string\"", rows[0]->ShortDebugString());
+  EXPECT_EQ("field_name: \"age\" field_type: \"int64\"", rows[1]->ShortDebugString());
+
+  ASSERT_FALSE(Execute(Parse(
+      "DESCRIBE Addresses;")
+      .ValueOrDie(), &pool, &db, &rows).ok());
+}
+
 }  // namespace
 }  // namespace sfdb

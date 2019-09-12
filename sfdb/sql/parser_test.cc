@@ -43,6 +43,22 @@ TEST(ParserTest, ShowTables) {
   EXPECT_EQ(Ast::SHOW_TABLES, ast->type);
 }
 
+TEST(ParserTest, ShowWithoutTablesKeyword) {
+  auto status = Parse("SHOW;");
+  EXPECT_FALSE(status.ok());
+}
+
+TEST(ParserTest, DescribeTable) {
+  std::unique_ptr<Ast> ast = Parse("DESCRIBE People;").ValueOrDie();
+  EXPECT_EQ(Ast::DESCRIBE_TABLE, ast->type);
+  EXPECT_EQ("People", ast->table_name());
+}
+
+TEST(ParserTest, DescribeTableWithoutTable) {
+  auto status = Parse("DESCRIBE;");
+  EXPECT_FALSE(status.ok());
+}
+
 TEST(ParserTest, DropTable) {
   std::unique_ptr<Ast> ast = Parse("DROP TABLE Blah;").ValueOrDie();
   EXPECT_EQ(Ast::DROP_TABLE, ast->type);

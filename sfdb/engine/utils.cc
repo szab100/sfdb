@@ -39,7 +39,19 @@ using ::util::InternalError;
 using ::util::NotFoundError;
 using ::util::Status;
 using ::util::StatusOr;
+using ::util::InvalidArgumentError;
 }  // namespace
+
+StatusOr<std::unique_ptr<ProtoStream>> ExecuteDescribeTable(
+    const TypedAst &ast, const Db *db) SHARED_LOCKS_REQUIRED(db->mu) {
+  auto t = db->FindTable(ast.table_name());
+  if (!t)
+    return NotFoundError(StrCat("Table ", ast.table_name(),
+                                " not found in database ", db->name));
+
+  auto description = db->DescribeTable(ast.table_name());
+  return std::unique_ptr<ProtoStream>(new TableProtoStream(description));
+}
 
 StatusOr<std::unique_ptr<ProtoStream>> ExecuteShowTables(
     const TypedAst &ast, const Db *db) SHARED_LOCKS_REQUIRED(db->mu) {

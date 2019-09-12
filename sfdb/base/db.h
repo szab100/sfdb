@@ -125,7 +125,9 @@ struct Db {
 
   // Caller owns retult object
   const Table *GetTableList() const SHARED_LOCKS_REQUIRED(mu);
+  const Table *DescribeTable(::absl::string_view name) const SHARED_LOCKS_REQUIRED(mu);
   const ::google::protobuf::Descriptor* GetTableListTableType() const;
+  const ::google::protobuf::Descriptor* GetDescribeTableType() const;
 
   // Table indices.
   TableIndex *FindIndex(::absl::string_view index_name) const
@@ -153,6 +155,8 @@ private:
 
   // Used to store tables descriptions for DESCRIBE <table> queries.
   std::map<std::string, std::unique_ptr<Table>> table_descs_ GUARDED_BY(mu);
+  // This descriptor is used to avoid useless memory allocations
+  const ::google::protobuf::Descriptor* const describe_table_descriptor_;
 };
 
 }  // namespace sfdb

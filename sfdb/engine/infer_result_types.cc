@@ -60,6 +60,11 @@ StatusOr<AstType> GetShowTablesType(const Db *db)
   return AstType::RepeatedMessage(db->GetTableListTableType());
 }
 
+StatusOr<AstType> GetDescribeTableType(const Db *db)
+    SHARED_LOCKS_REQUIRED(db->mu) {
+  return AstType::RepeatedMessage(db->GetDescribeTableType());
+}
+
 StatusOr<AstType> GetTableScanType(const std::string &table_name, const Db *db)
     SHARED_LOCKS_REQUIRED(db->mu) {
   const Table *t = db->FindTable(table_name);
@@ -221,6 +226,8 @@ StatusOr<AstType> InferResultType(
       return InternalError("Cannot get result type of AST of type ERROR");
     case Ast::SHOW_TABLES:
       return GetShowTablesType(db);
+    case Ast::DESCRIBE_TABLE:
+      return GetDescribeTableType(db);
     case Ast::CREATE_TABLE:
     case Ast::CREATE_INDEX:
     case Ast::DROP_TABLE:

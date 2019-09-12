@@ -36,6 +36,9 @@ namespace sfdb {
 ::util::StatusOr<std::unique_ptr<ProtoStream>> ExecuteShowTables(
     const TypedAst &ast, const Db *db) SHARED_LOCKS_REQUIRED(db->mu);
 
+::util::StatusOr<std::unique_ptr<ProtoStream>> ExecuteDescribeTable(
+    const TypedAst &ast, const Db *db) SHARED_LOCKS_REQUIRED(db->mu);
+
 }  // namespace
 
 #endif  // SFDB_ENGINE_UTILS_H_

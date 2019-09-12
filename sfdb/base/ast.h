@@ -69,6 +69,7 @@ class Ast {
     ORDER_BY,    // lhs ORDER BY column_indices
     MAP,         // [[c:v(x) for c, v in zip(columns, values)] for x in rhs]
     SHOW_TABLES, //  ["People", "Contacts"]
+    DESCRIBE_TABLE,  //  ["id", "int64"]["name", "string"]]
 
     // Operators in increasing order of priority.
     OP_IN, OP_LIKE, OP_OR,
@@ -148,6 +149,9 @@ class Ast {
   }
   static std::unique_ptr<Ast> ShowTables() {
     return std::unique_ptr<Ast>(new Ast(SHOW_TABLES));
+  }
+  static std::unique_ptr<Ast> DescribeTable(::absl::string_view table_name) {
+    return std::unique_ptr<Ast>(new Ast(DESCRIBE_TABLE, table_name));
   }
   static std::unique_ptr<Ast> BinaryOp(
       Type op, std::unique_ptr<Ast> &&lhs, std::unique_ptr<Ast> &&rhs) {

@@ -21,11 +21,15 @@
  */
 #include "sfdb/base/db.h"
 
+#include <array>
 #include <map>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 #include "absl/memory/memory.h"
+#include "absl/strings/str_format.h"
 #include "glog/logging.h"
 #include "util/task/statusor.h"
 
@@ -37,6 +41,7 @@ inline int Cmp(const T &a, const T &b) { return a < b ? -1 : (a == b ? 0 : 1); }
 
 using ::absl::make_unique;
 using ::absl::string_view;
+using ::absl::StrFormat;
 using ::google::protobuf::Descriptor;
 using ::google::protobuf::FieldDescriptor;
 using ::google::protobuf::FieldDescriptorProto;
@@ -57,13 +62,13 @@ const ::google::protobuf::Descriptor *BuildTableListDescriptor(ProtoPool *p) {
   return p->CreateProtoClass(kTableListProtoName, fields).ValueOrDie();
 }
 
-const ::google::protobuf::Descriptor *BuildTableDescDescriptor(ProtoPool *p) {
+const ::google::protobuf::Descriptor *BuildTableDescDescriptor(ProtoPool *p, uint64 uid) {
   const std::vector<std::pair<std::string, FieldDescriptor::Type>> fields = {
       {"field_name", FieldDescriptor::TYPE_STRING},
       {"field_type", FieldDescriptor::TYPE_STRING},
   };
 
-  return p->CreateProtoClass(kTableDescProtoName, fields).ValueOrDie();
+  return p->CreateProtoClass(StrFormat("%s%d", kTableDescProtoName, uid), fields).ValueOrDie();
 }
 
 }  // namespace
@@ -88,6 +93,7 @@ Table *Db::PutTable(string_view name, std::unique_ptr<ProtoPool> &&pool,
   auto new_table_ptr = (tables[name_str] = make_unique<Table>(
       name, std::move(pool), type)).get();
   scheme_changed_ = true;
+  UpdateTableDescritption(new_table_ptr);
   return new_table_ptr;
 }
 
@@ -119,7 +125,7 @@ void Db::UpdateTableDescritption(const Table* table) {
   auto it = table_descs_.find(table->name);
   if (it == table_descs_.end()) {
     std::unique_ptr<ProtoPool> table_pool = pool->Branch();
-    auto table_description_descriptor = BuildTableDescDescriptor(pool.get());
+    auto table_description_descriptor = BuildTableDescDescriptor(pool.get(), reinterpret_cast<uint64>(table_pool.get()));
     t = (table_descs_[table->name] = absl::make_unique<Table>(absl::StrCat(kTableListProtoName, table->name),
       std::move(table_pool), table_description_descriptor)).get();
   } else {
@@ -147,7 +153,6 @@ void Db::UpdateTableDescritption(const Table* table) {
   }
 }
 
-
 void Db::RemoveTableDescritption(const std::string& table_name) {
   auto it = table_descs_.find(table_name);
   CHECK(it != table_descs_.end());
@@ -156,6 +161,11 @@ void Db::RemoveTableDescritption(const std::string& table_name) {
 const ::google::protobuf::Descriptor* Db::GetTableListTableType() const {
   return table_list_->type;
 }
+
+const ::google::protobuf::Descriptor* Db::GetDescribeTableType() const {
+  return describe_table_descriptor_;
+}
+
 const Table *Db::GetTableList() const {
   if (scheme_changed_) {
     UpdateTableList();
@@ -165,11 +175,20 @@ const Table *Db::GetTableList() const {
   return table_list_.get();
 }
 
+const Table *Db::DescribeTable(::absl::string_view name) const {
+  const std::string name_str(name);
+  auto it = table_descs_.find(name_str);
+  CHECK(it != table_descs_.end()) << "Requesting non existing table.";
+
+  return it->second.get();
+}
+
 Db::Db(string_view name, Vars *root_vars)
     : name(name),
       pool(new ProtoPool),
       vars(root_vars->Branch()),
-      scheme_changed_(false) {
+      scheme_changed_(false),
+      describe_table_descriptor_(BuildTableDescDescriptor(pool.get(), 0)) {
   // Cretae DB internal tables
   CreateTableListTable();
 }
@@ -184,6 +203,7 @@ bool Db::DropTable(string_view name) {
 
   CHECK(tables.erase(std::string(name)));
   scheme_changed_ = true;
+  RemoveTableDescritption(name_str);
   return true;
 }
 

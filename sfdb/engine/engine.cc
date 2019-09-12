@@ -68,6 +68,8 @@ StatusOr<std::unique_ptr<ProtoStream>> GetProtoStream(const TypedAst &ast,
   switch(ast.type) {
     case Ast::Type::SHOW_TABLES:
       return ExecuteShowTables(ast, db);
+    case Ast::Type::DESCRIBE_TABLE:
+      return ExecuteDescribeTable(ast, db);
     default:
       return ExecuteSelect(ast, pool, db);
   }

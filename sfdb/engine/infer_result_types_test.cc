@@ -81,6 +81,10 @@ TEST_F(InferResultTypesTest, ShowTables) {
   EXPECT_TRUE(TypeOf("SHOW TABLES;").IsRepeatedMessage());
 }
 
+TEST_F(InferResultTypesTest, DescribeTable) {
+  EXPECT_TRUE(TypeOf("DESCRIBE People;").IsRepeatedMessage());
+}
+
 TEST_F(InferResultTypesTest, Void) {
   EXPECT_TRUE(TypeOf("CREATE TABLE Tab (x int64);").is_void);
   EXPECT_TRUE(TypeOf("INSERT INTO Tab (x) VALUES (13);").is_void);

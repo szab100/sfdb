@@ -670,6 +670,13 @@ StatusOr<std::unique_ptr<Ast>> ParseShowTables(Parser *p) {
   return Ast::ShowTables();
 }
 
+StatusOr<std::unique_ptr<Ast>> ParseDescribeTable(Parser *p) {
+  const StatusOr<std::string> so = ParseTableName(p);
+  if (!so.ok()) return so.status();
+
+  return Ast::DescribeTable(so.ValueOrDie());
+}
+
 StatusOr<std::unique_ptr<Ast>> Parse(Parser *p) {
   if (p->i >= p->tokens.size()) return InvalidArgumentError("Empty statement");
   if (p->tokens[p->i].type == Token::WORD) {
@@ -680,6 +687,7 @@ StatusOr<std::unique_ptr<Ast>> Parse(Parser *p) {
     if (up_word == "SELECT") return ParseSelect(p);
     if (up_word == "UPDATE") return ParseUpdate(p);
     if (up_word == "SHOW") return ParseShowTables(p);
+    if (up_word == "DESCRIBE") return ParseDescribeTable(p);
   }
   return Err(p, StrCat("Unexpected ", p->LastTokenStr()));
 }

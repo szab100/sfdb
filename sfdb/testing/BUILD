@@ -19,6 +19,7 @@ cc_test(
     deps = [
         "//sfdb:modules",
         "//sfdb:service_impl",
+        "//util/net:port",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
@@ -32,8 +33,12 @@ cc_test(
     size = "small",
     srcs = ["e2e_test.cc"],
     deps = [
+        "//sfdb:flags",
         "//sfdb:modules",
         "//sfdb:service_impl",
+        "//util/net:port",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

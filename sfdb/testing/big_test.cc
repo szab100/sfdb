@@ -22,22 +22,36 @@
 #include <string>
 #include <vector>
 
+#include "absl/flags/flag.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "sfdb/flags.h"
 #include "sfdb/modules.h"
 #include "sfdb/service_impl.h"
 #include "gtest/gtest.h"
+#include "util/net/port.h"
 
 namespace sfdb {
 namespace {
+using ::absl::GetFlag;
+using ::absl::SetFlag;
+using ::absl::StrFormat;
 
 using ::absl::make_unique;
 using ::absl::StrFormat;
 
 class BigTest : public ::testing::Test {
 protected:
+  void SetFlags() {
+    auto port = PickUpFreeLocalPort();
+    absl::SetFlag(&FLAGS_port, port);
+    absl::SetFlag(&FLAGS_raft_my_target, absl::StrFormat("0.0.0.0:%d", port));
+    absl::SetFlag(&FLAGS_raft_targets, absl::StrFormat("0.0.0.0:%d", port));
+  }
+
   void SetUp() override {
+    SetFlags();
     modules_ = make_unique<Modules>();
     modules_->Init();
     service_ = make_unique<SfdbServiceImpl>(modules_.get());

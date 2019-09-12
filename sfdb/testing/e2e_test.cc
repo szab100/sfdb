@@ -22,16 +22,32 @@
 #include <string>
 #include <vector>
 
+#include "absl/flags/flag.h"
+#include "sfdb/flags.h"
 #include "sfdb/modules.h"
 #include "sfdb/service_impl.h"
 #include "gtest/gtest.h"
+#include "util/net/port.h"
 
 namespace sfdb {
 namespace {
+using ::absl::GetFlag;
+using ::absl::SetFlag;
+using ::absl::StrFormat;
 
 class E2eTest : public ::testing::Test {
 protected:
+
+  void SetFlags() {
+    auto port = PickUpFreeLocalPort();
+    absl::SetFlag(&FLAGS_port, port);
+    absl::SetFlag(&FLAGS_raft_my_target, absl::StrFormat("0.0.0.0:%d", port));
+    absl::SetFlag(&FLAGS_raft_targets, absl::StrFormat("0.0.0.0:%d", port));
+  }
+
   void SetUp() override {
+    SetFlags();
+
     modules_.reset(new Modules);
     modules_->Init();
     service_.reset(new SfdbServiceImpl(modules_.get()));

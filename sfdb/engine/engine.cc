@@ -99,6 +99,31 @@ Status ExecuteRead(
   return ps.status();
 }
 
+Status ExecuteWriteAST(TypedAst* ast, ProtoPool *pool, Db *db) {
+  switch (ast->type) {
+    case Ast::CREATE_TABLE:
+      return ExecuteCreateTable(*ast, db);
+    case Ast::CREATE_INDEX:
+      return ExecuteCreateIndex(*ast, db);
+    case Ast::DROP_TABLE:
+      return ExecuteDropTable(*ast, db);
+    case Ast::DROP_INDEX:
+      return ExecuteDropIndex(*ast, db);
+    case Ast::INSERT:
+      return ExecuteInsert(*ast, db);
+    case Ast::UPDATE:
+      return ExecuteUpdate(*ast, db);
+    case Ast::EXISTS:
+      return ExecuteExistsCheck(*ast, db);
+    case Ast::IF:
+      return ExecuteWriteAST(ast->lhs(), pool, db).ok()
+                 ? ExecuteWriteAST(ast->rhs(), pool, db)
+                 : OkStatus();
+    default:
+      return InternalError("Bug in Execute()");
+  }
+}
+
 Status ExecuteWrite(std::unique_ptr<Ast> &&ast, ProtoPool *pool, Db *db) {
   CHECK(ast->IsMutation());
   ::absl::WriterMutexLock lock(&db->mu);
@@ -109,22 +134,7 @@ Status ExecuteWrite(std::unique_ptr<Ast> &&ast, ProtoPool *pool, Db *db) {
 
   std::unique_ptr<TypedAst> oast = Optimize(*db, std::move(so.ValueOrDie()));
 
-  switch (oast->type) {
-    case Ast::CREATE_TABLE:
-      return ExecuteCreateTable(*oast, db);
-    case Ast::CREATE_INDEX:
-      return ExecuteCreateIndex(*oast, db);
-    case Ast::DROP_TABLE:
-      return ExecuteDropTable(*oast, db);
-    case Ast::DROP_INDEX:
-      return ExecuteDropIndex(*oast, db);
-    case Ast::INSERT:
-      return ExecuteInsert(*oast, db);
-    case Ast::UPDATE:
-      return ExecuteUpdate(*oast, db);
-    default:
-      return InternalError("Bug in Execute()");
-  }
+  return ExecuteWriteAST(oast.get(), pool, db);
 }
 
 Status Execute(

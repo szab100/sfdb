@@ -35,6 +35,10 @@ bool Ast::IsMutation() const {
     case INSERT:
     case UPDATE:
       return true;
+    case IF:
+      CHECK(lhs());
+      CHECK(rhs());
+      return lhs()->IsMutation() || rhs()->IsMutation();
     default:
       return false;
   }
@@ -45,6 +49,7 @@ std::string Ast::TypeToString(Type t) {
   switch (t) {
 #define C(x) case x: return #x
     C(ERROR);
+    C(IF); C(EXISTS);
     C(SHOW_TABLES); C(DESCRIBE_TABLE);
     C(CREATE_TABLE); C(CREATE_INDEX); C(DROP_TABLE); C(DROP_INDEX);
     C(INSERT); C(UPDATE); C(SINGLE_EMPTY_ROW); C(TABLE_SCAN); C(INDEX_SCAN);

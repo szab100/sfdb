@@ -267,5 +267,84 @@ TEST(EngineTest, DescribeTable) {
       .ValueOrDie(), &pool, &db, &rows).ok());
 }
 
+TEST(EngineTest, CreateAndDropWithExists) {
+  ProtoPool pool;
+  BuiltIns vars;
+  Db db("Test", &vars);
+  std::vector<std::unique_ptr<Message>> rows;
+
+  ASSERT_OK(Execute(Parse(
+      "CREATE TABLE People (name string, age int64);")
+      .ValueOrDie(), &pool, &db, &rows));
+
+  ASSERT_OK(Execute(Parse(
+      "SHOW TABLES;")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_EQ(1, rows.size());
+  // TODO: this check relies on the order of records, which might change
+  EXPECT_EQ("table_name: \"People\"", rows[0]->ShortDebugString());
+
+  ASSERT_OK(Execute(Parse(
+      "CREATE TABLE People (name string, age int64) IF NOT EXISTS;")
+      .ValueOrDie(), &pool, &db, &rows));
+
+  ASSERT_NOT_OK(Execute(Parse(
+      "CREATE TABLE People (name string, age int64) IF EXISTS;")
+      .ValueOrDie(), &pool, &db, &rows));
+
+  ASSERT_OK(Execute(Parse(
+      "CREATE INDEX IndexI ON People (age) IF EXISTS;").ValueOrDie(),
+      &pool, &db, &rows));
+
+  {
+    ::absl::ReaderMutexLock lock(&db.mu);
+    EXPECT_FALSE(!!db.FindIndex("IndexI"));
+  }
+
+  ASSERT_OK(Execute(Parse(
+      "CREATE INDEX IndexI ON People (age) IF NOT EXISTS;").ValueOrDie(),
+      &pool, &db, &rows));
+
+  {
+    ::absl::ReaderMutexLock lock(&db.mu);
+    EXPECT_EQ("IndexI", db.FindIndex("IndexI")->name);
+    EXPECT_EQ("People", db.FindIndex("IndexI")->t->name);
+  }
+
+  ASSERT_OK(Execute(Parse(
+      "DROP INDEX IndexI IF NOT EXISTS;").ValueOrDie(),
+      &pool, &db, &rows));
+
+  {
+    ::absl::ReaderMutexLock lock(&db.mu);
+    ASSERT_TRUE(!!db.FindIndex("IndexI"));
+    EXPECT_EQ("IndexI", db.FindIndex("IndexI")->name);
+    EXPECT_EQ("People", db.FindIndex("IndexI")->t->name);
+  }
+
+  ASSERT_OK(Execute(Parse(
+      "DROP INDEX IndexI IF EXISTS;").ValueOrDie(),
+      &pool, &db, &rows));
+
+  {
+    ::absl::ReaderMutexLock lock(&db.mu);
+    EXPECT_FALSE(!!db.FindIndex("IndexI"));
+  }
+
+  ASSERT_OK(Execute(Parse(
+      "DROP TABLE People IF EXISTS;")
+      .ValueOrDie(), &pool, &db, &rows));
+
+    rows.clear();
+  ASSERT_OK(Execute(Parse(
+      "SHOW TABLES;")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_EQ(0, rows.size());
+
+  ASSERT_NOT_OK(Execute(Parse(
+      "DROP TABLE People IF NOT EXISTS;")
+      .ValueOrDie(), &pool, &db, &rows));
+}
+
 }  // namespace
 }  // namespace sfdb

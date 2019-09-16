@@ -259,6 +259,8 @@ StatusOr<AstType> InferResultType(
     case Ast::MAP:
       return GetMapType(ast, values, pool);
     case Ast::OP_NOT:
+      // Special case when OP_NOT used together with EXISTS
+      if (!lhs && !rhs) return AstType::Scalar(FieldDescriptor::TYPE_BOOL);
     case Ast::OP_BITWISE_NOT:
       if (lhs) return InternalError("Binary version of a unary operator?!");
       [[clang::fallthrough]];
@@ -283,6 +285,10 @@ StatusOr<AstType> InferResultType(
     case Ast::OP_DIV:
     case Ast::OP_MOD:
       return GetBinaryOpType(ast.type, lhs->result_type, rhs->result_type);
+    case Ast::IF:
+      return AstType::Void();
+    case Ast::EXISTS:
+      return AstType::Scalar(FieldDescriptor::TYPE_BOOL);
   }
 
   return InvalidArgumentError("Wrong Ast.type passed to InferResultType");
@@ -293,6 +299,11 @@ StatusOr<AstType> InferResultType(
 ::util::StatusOr<std::unique_ptr<TypedAst>> InferResultTypes(
     std::unique_ptr<Ast> &&ast, ProtoPool *pool, const Db *db,
     const Vars *vars) {
+  // TODO: Implement proper handling of IF statements.
+  // IF statement is not handled here properly, f.ex.
+  // CREATE ... IF NOT EXISTS statement will have
+  // result type of IF, not CREATE
+
   // Recurse on the right child.
   std::unique_ptr<TypedAst> lhs = nullptr, rhs = nullptr;
   if (ast->rhs()) {

@@ -65,6 +65,34 @@ TEST(ParserTest, DropTable) {
   EXPECT_EQ("Blah", ast->table_name());
 }
 
+TEST(ParserTest, CreateTableIfNotExists) {
+  std::unique_ptr<Ast> ast = Parse(
+      "CREATE TABLE Mixed_case (name string, age int64) IF NOT EXISTS;").ValueOrDie();
+  EXPECT_EQ(Ast::IF, ast->type);
+  ASSERT_TRUE(!!ast->lhs());
+  ASSERT_TRUE(!!ast->rhs());
+  EXPECT_EQ(Ast::EXISTS, ast->lhs()->type);
+  ASSERT_TRUE(!!ast->lhs()->lhs());
+  EXPECT_EQ(Ast::OP_NOT, ast->lhs()->lhs()->type);
+  EXPECT_EQ("Mixed_case", ast->lhs()->table_name());
+  EXPECT_EQ(Ast::CREATE_TABLE, ast->rhs()->type);
+  EXPECT_EQ("Mixed_case", ast->rhs()->table_name());
+  EXPECT_EQ(std::vector<std::string>({"name", "age"}), ast->rhs()->columns());
+  EXPECT_EQ(std::vector<std::string>({"string", "int64"}), ast->rhs()->column_types());
+}
+
+TEST(ParserTest, DropTableIfExists) {
+  std::unique_ptr<Ast> ast = Parse(
+      "DROP TABLE Mixed_case IF EXISTS;").ValueOrDie();
+  EXPECT_EQ(Ast::IF, ast->type);
+  ASSERT_TRUE(!!ast->lhs());
+  ASSERT_TRUE(!!ast->rhs());
+  EXPECT_EQ(Ast::EXISTS, ast->lhs()->type);
+  EXPECT_EQ("Mixed_case", ast->lhs()->table_name());
+  EXPECT_EQ(Ast::DROP_TABLE, ast->rhs()->type);
+  EXPECT_EQ("Mixed_case", ast->rhs()->table_name());
+}
+
 TEST(ParserTest, CreateTable) {
   std::unique_ptr<Ast> ast = Parse(
       "CREATE TABLE Mixed_case (name string, age int64);").ValueOrDie();
@@ -118,6 +146,35 @@ TEST(ParseTest, CreateIndex) {
   EXPECT_EQ(2, ast->columns().size());
   EXPECT_EQ("a", ast->columns()[0]);
   EXPECT_EQ("b", ast->columns()[1]);
+}
+
+TEST(ParseTest, CreateIndexIfNotExists) {
+  std::unique_ptr<Ast> ast = Parse(
+      "CREATE INDEX Indie ON Tabbie (a, b) IF NOT EXISTS;").ValueOrDie();
+  EXPECT_EQ(Ast::IF, ast->type);
+  ASSERT_TRUE(!!ast->lhs());
+  ASSERT_TRUE(!!ast->rhs());
+  EXPECT_EQ(Ast::EXISTS, ast->lhs()->type);
+  ASSERT_TRUE(!!ast->lhs()->lhs());
+  EXPECT_EQ(Ast::OP_NOT, ast->lhs()->lhs()->type);
+  EXPECT_EQ("Indie", ast->lhs()->index_name());
+  EXPECT_EQ(Ast::CREATE_INDEX, ast->rhs()->type);
+  EXPECT_EQ("Tabbie", ast->rhs()->table_name());
+  EXPECT_EQ("Indie", ast->rhs()->index_name());
+  EXPECT_EQ(2, ast->rhs()->columns().size());
+  EXPECT_EQ("a", ast->rhs()->columns()[0]);
+  EXPECT_EQ("b", ast->rhs()->columns()[1]);
+}
+
+TEST(ParseTest, DropIndexIfExists) {
+  std::unique_ptr<Ast> ast = Parse("DROP INDEX Indie IF EXISTS;").ValueOrDie();
+  EXPECT_EQ(Ast::IF, ast->type);
+  ASSERT_TRUE(!!ast->lhs());
+  ASSERT_TRUE(!!ast->rhs());
+  EXPECT_EQ(Ast::EXISTS, ast->lhs()->type);
+  EXPECT_EQ("Indie", ast->lhs()->index_name());
+  EXPECT_EQ(Ast::DROP_INDEX, ast->rhs()->type);
+  EXPECT_EQ("Indie", ast->rhs()->index_name());
 }
 
 TEST(ParseTest, CreateIndex_TrailingComma) {

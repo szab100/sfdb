@@ -59,4 +59,30 @@ StatusOr<std::unique_ptr<ProtoStream>> ExecuteShowTables(
   return std::unique_ptr<ProtoStream>(new TableProtoStream(scheme));
 }
 
+Status ExecuteExistsCheck(const TypedAst &ast, const Db *db)
+    SHARED_LOCKS_REQUIRED(db->mu) {
+  bool must_exist = true;
+
+  if(ast.lhs()) {
+    // There may be only OP_NOT lhs child
+    CHECK(ast.lhs()->type == Ast::OP_NOT);
+    must_exist = !(ast.lhs()->type == Ast::OP_NOT);
+  }
+
+  bool object_exists = false;
+  if (!ast.index_name().empty()) {
+    object_exists = db->FindIndex(ast.index_name());
+  } else if (!ast.table_name().empty()) {
+    object_exists = db->FindTable(ast.table_name());
+  } else {
+    return InvalidArgumentError("EXISTS used in wrong context");
+  }
+
+  if (must_exist) {
+    return object_exists ? Status::OK : Status::CANCELLED;
+  } else {
+    return object_exists ? Status::CANCELLED : Status::OK;
+  }
+}
+
 }  // namespace sfdb

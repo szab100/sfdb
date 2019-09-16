@@ -68,6 +68,9 @@ class Ast {
     GROUP_BY,    // lhs GROUP BY column_indices
     ORDER_BY,    // lhs ORDER BY column_indices
     MAP,         // [[c:v(x) for c, v in zip(columns, values)] for x in rhs]
+    IF,          // Used for constructs like CREATE TABLE/INDEX ... IF EXISTS/NOT EXEISTS
+                 // rhs will be expression which needs to executed, lhs will be condition
+    EXISTS,      // Checks if table(table_name) or index(index_name) exists
     SHOW_TABLES, //  ["People", "Contacts"]
     DESCRIBE_TABLE,  //  ["id", "int64"]["name", "string"]]
 
@@ -105,6 +108,24 @@ class Ast {
   static bool IsBinaryOp(Type t);
 
   // factory functions
+  static std::unique_ptr<Ast> CreateConditionalStatement(std::unique_ptr<Ast> &&lhs, std::unique_ptr<Ast> &&rhs) {
+    return std::unique_ptr<Ast>(new Ast(
+        IF, "", "", std::move(lhs), std::move(rhs)));
+  }
+
+  static std::unique_ptr<Ast> CreateNotStatement() {
+    return std::unique_ptr<Ast>(new Ast(
+        OP_NOT, "", "", nullptr, nullptr));
+  }
+
+  static std::unique_ptr<Ast> CreateObjectExistsStatement(
+      ::absl::string_view table_name, ::absl::string_view index_name,
+      bool negate) {
+    return std::unique_ptr<Ast>(new Ast(EXISTS, table_name, index_name,
+                                        negate ? CreateNotStatement() : nullptr,
+                                        nullptr));
+  }
+
   static std::unique_ptr<Ast> CreateTable(
       ::absl::string_view table_name, std::vector<std::string> &&columns,
       std::vector<std::string> &&column_types) {

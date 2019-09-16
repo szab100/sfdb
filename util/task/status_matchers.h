@@ -59,10 +59,33 @@ class IsOkMatcher {
 
 inline IsOkMatcher IsOk() { return IsOkMatcher(); }
 
+template <typename T>
+class MonoIsNotOkMatcherImpl : public MatcherInterface<T> {
+ public:
+  void DescribeTo(std::ostream* os) const override { *os << "is not OK"; }
+  void DescribeNegationTo(std::ostream* os) const override {
+    *os << "is OK";
+  }
+  bool MatchAndExplain(T actual_value, MatchResultListener*) const override {
+    return !GetStatus(actual_value).ok();
+  }
+};
+
+class IsNotOkMatcher {
+ public:
+  template <typename T>
+  operator Matcher<T>() const {  // NOLINT
+    return Matcher<T>(new MonoIsNotOkMatcherImpl<T>());
+  }
+};
+
+inline IsNotOkMatcher IsNotOk() { return IsNotOkMatcher(); }
+
 }  // namespace status
 }  // namespace testing
 
 #define EXPECT_OK(expression) EXPECT_THAT(expression, ::testing::status::IsOk())
 #define ASSERT_OK(expression) ASSERT_THAT(expression, ::testing::status::IsOk())
+#define ASSERT_NOT_OK(expression) ASSERT_THAT(expression, ::testing::status::IsNotOk())
 
 #endif  // UTIL_TASK_STATUS_MATCHER_H_

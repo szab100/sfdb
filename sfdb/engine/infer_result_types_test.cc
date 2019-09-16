@@ -85,6 +85,20 @@ TEST_F(InferResultTypesTest, DescribeTable) {
   EXPECT_TRUE(TypeOf("DESCRIBE People;").IsRepeatedMessage());
 }
 
+TEST_F(InferResultTypesTest, CreateDropTableWithIf) {
+  EXPECT_TRUE(TypeOf("CREATE TABLE Tab (x int64) IF EXISTS;").is_void);
+  EXPECT_TRUE(TypeOf("CREATE TABLE Tab (x int64) IF NOT EXISTS;").is_void);
+  EXPECT_TRUE(TypeOf("DROP TABLE Tab IF EXISTS;").is_void);
+  EXPECT_TRUE(TypeOf("DROP TABLE Tab IF NOT EXISTS;").is_void);
+}
+
+TEST_F(InferResultTypesTest, CreateDropIndexWithIf) {
+  EXPECT_TRUE(TypeOf("CREATE INDEX Ind ON Tab (id) IF EXISTS;").is_void);
+  EXPECT_TRUE(TypeOf("CREATE INDEX Ind ON Tab (id) IF NOT EXISTS;").is_void);
+  EXPECT_TRUE(TypeOf("DROP INDEX Ind IF EXISTS;").is_void);
+  EXPECT_TRUE(TypeOf("DROP INDEX Ind IF NOT EXISTS;").is_void);
+}
+
 TEST_F(InferResultTypesTest, Void) {
   EXPECT_TRUE(TypeOf("CREATE TABLE Tab (x int64);").is_void);
   EXPECT_TRUE(TypeOf("INSERT INTO Tab (x) VALUES (13);").is_void);

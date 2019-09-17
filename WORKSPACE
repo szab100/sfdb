@@ -22,15 +22,19 @@ git_repository(
     name = "com_github_grpc_grpc",
     remote = "https://github.com/grpc/grpc.git",
     commit = "08fd59f039c7cf62614ab7741b3f34527af103c7",
-    shallow_since = "1562093080 -0700"
+    shallow_since = "1562093080 -0700",
 )
-git_repository( # transitive dependency of gRPC - fixing version to
+
+git_repository(
+    # transitive dependency of gRPC - fixing version to
     name = "boringssl",
     remote = "https://github.com/google/boringssl.git",
     commit = "a21f78d24bf645ccd6774b2c7e52e3c0514f7f29",
-    shallow_since = "1565026374 +0000"
+    shallow_since = "1565026374 +0000",
 )
+
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
+
 grpc_deps()
 
 # Various Git Repositories
@@ -45,14 +49,14 @@ git_repository(
     name = "com_google_absl",
     remote = "https://github.com/abseil/abseil-cpp",
     commit = "36d37ab992038f52276ca66b9da80c1cf0f57dc2",
-    shallow_since = "1564092152 -0400"
+    shallow_since = "1564092152 -0400",
 )
 
 git_repository(
     name = "com_google_googletest",
     remote = "https://github.com/google/googletest",
     commit = "2fe3bd994b3189899d93f1d5a881e725e046fdc2",
-    shallow_since = "1535728917 -0400"
+    shallow_since = "1535728917 -0400",
 )
 
 git_repository(
@@ -160,4 +164,3 @@ http_archive(
     strip_prefix = "leveldb-a53934a3ae1244679f812d998a4f16f2c7f309a6",
     url = "https://github.com/google/leveldb/archive/a53934a3ae1244679f812d998a4f16f2c7f309a6.tar.gz"
 )
-

@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "absl/flags/flag.h"
-#include "sfdb/flags.h"
 #include "server/grpc_modules.h"
 #include "server/grpc_sfdb_service_impl.h"
 #include "util/net/port.h"

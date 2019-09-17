@@ -17,6 +17,11 @@ cc_test(
     size = "medium",
     srcs = ["big_test.cc"],
     deps = [
+<<<<<<< HEAD
+=======
+        "//server:grpc_modules",
+        "//server:grpc_sfdb_service_impl",
+>>>>>>> bdf1a65... Fix tests failing after service_impl <> braft/raft refactor
         "//util/net:port",
         "//server:grpc_modules",
         "//server:grpc_sfdb_service_impl",
@@ -35,7 +40,6 @@ cc_test(
     deps = [
         "//server:grpc_modules",
         "//server:grpc_sfdb_service_impl",
-        "//sfdb:flags",
         "//util/net:port",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/strings",

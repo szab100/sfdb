@@ -26,7 +26,6 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "sfdb/flags.h"
 #include "server/grpc_modules.h"
 #include "server/grpc_sfdb_service_impl.h"
 #include "util/net/port.h"

@@ -6,7 +6,7 @@ cc_library(
         "port.cc",
     ],
     hdrs = [
-        "port.h"
+        "port.h",
     ],
     deps = [
         "@com_github_google_glog//:glog",

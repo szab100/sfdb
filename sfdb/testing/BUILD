@@ -14,7 +14,7 @@ proto_library(
 
 cc_test(
     name = "big_test",
-    size = "large",
+    size = "medium",
     srcs = ["big_test.cc"],
     deps = [
         "//sfdb:modules",

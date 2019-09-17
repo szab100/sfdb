@@ -29,8 +29,8 @@
 #include "sfdb/flags.h"
 #include "sfdb/modules.h"
 #include "sfdb/service_impl.h"
-#include "gtest/gtest.h"
 #include "util/net/port.h"
+#include "gtest/gtest.h"
 
 namespace sfdb {
 namespace {
@@ -38,28 +38,25 @@ using ::absl::GetFlag;
 using ::absl::SetFlag;
 using ::absl::StrFormat;
 
-using ::absl::make_unique;
-using ::absl::StrFormat;
-
 class BigTest : public ::testing::Test {
 protected:
   void SetFlags() {
     auto port = PickUpFreeLocalPort();
-    absl::SetFlag(&FLAGS_port, port);
-    absl::SetFlag(&FLAGS_raft_my_target, absl::StrFormat("0.0.0.0:%d", port));
-    absl::SetFlag(&FLAGS_raft_targets, absl::StrFormat("0.0.0.0:%d", port));
+    SetFlag(&FLAGS_port, port);
+    SetFlag(&FLAGS_raft_my_target, StrFormat("0.0.0.0:%d", port));
+    SetFlag(&FLAGS_raft_targets, StrFormat("0.0.0.0:%d", port));
   }
 
   void SetUp() override {
     SetFlags();
-    modules_ = make_unique<Modules>();
+    modules_.reset(new Modules);
     modules_->Init();
-    service_ = make_unique<SfdbServiceImpl>(modules_.get());
-
+    service_.reset(new SfdbServiceImpl(modules_.get()));
     server_ = modules_->server_builder()->BuildAndStart();
   }
 
   void TearDown() override {
+    server_->Shutdown();
     service_ = nullptr;
     modules_ = nullptr;
     server_ = nullptr;

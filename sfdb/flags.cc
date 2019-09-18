@@ -38,3 +38,10 @@ ABSL_FLAG(string, raft_my_target, "localhost:27910",
 
 ABSL_FLAG(string, raft_targets, "",
           "The list of all (or other) RAFT targets in the cluster.");
+
+// -----------------------------------------------------------------------------
+// Logging related flags
+// -----------------------------------------------------------------------------
+
+ABSL_FLAG(int32, log_v, 0, "Alias for glog --v flag");
+ABSL_FLAG(bool, log_alsologtostderr, false, "Alias for glog --alsologtostderr flag");

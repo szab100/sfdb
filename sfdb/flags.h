@@ -33,4 +33,8 @@ ABSL_DECLARE_FLAG(int32, port);
 ABSL_DECLARE_FLAG(string, raft_my_target);
 ABSL_DECLARE_FLAG(string, raft_targets);
 
+// Logging related flags
+ABSL_DECLARE_FLAG(int32, log_v);
+ABSL_DECLARE_FLAG(bool, log_alsologtostderr);
+
 #endif // SFDB_FLAGS_H_

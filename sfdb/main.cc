@@ -39,6 +39,13 @@ int main(int argc, char **argv) {
   google::InitGoogleLogging(*argv);
   absl::ParseCommandLine(argc, argv);
 
+
+  // Setup some logging related flags.
+  // NOTE: glog uses gflags which are defined in global scope
+  //       so we have to set them like this using aliases
+  FLAGS_v = GetFlag(FLAGS_log_v);
+  FLAGS_alsologtostderr = GetFlag(FLAGS_log_alsologtostderr);
+
   ::sfdb::Modules modules;
   modules.Init();
   auto server_builder = modules.server_builder();

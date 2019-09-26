@@ -30,14 +30,14 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
 
-	api "github.com/googlegsa/sfdb/api_go_proto"
 	log "github.com/golang/glog"
+	api "github.com/googlegsa/sfdb/api_go_proto"
 	"google.golang.org/grpc"
 )
 
@@ -75,10 +75,10 @@ func getMaxStrLen(array []string) int {
 }
 
 func Max(x, y int) int {
-    if x < y {
-        return y
-    }
-    return x
+	if x < y {
+		return y
+	}
+	return x
 }
 
 func isDigit(v string) bool {
@@ -125,7 +125,7 @@ func (result *queryResult) drawTable() {
 	absMaxlen := getMaxStrLen(rowsToPrint)
 
 	// print header
-	fmt.Printf("\n+%s+\n", strings.Repeat("-", absMaxlen - 1))
+	fmt.Printf("\n+%s+\n", strings.Repeat("-", absMaxlen-1))
 
 	// print rows
 	for _, row := range rowsToPrint {
@@ -133,7 +133,7 @@ func (result *queryResult) drawTable() {
 	}
 
 	// print footer
-	fmt.Printf("+%s+\n", strings.Repeat("-", absMaxlen - 1))
+	fmt.Printf("+%s+\n", strings.Repeat("-", absMaxlen-1))
 }
 
 // Given a slice of strings where each string is an query result,
@@ -215,6 +215,7 @@ func (c *sfdbClient) execSQL(sql string) error {
 		return err
 	}
 
+	// TODO: refactor client to use our Go driver when it becomes 100% ready
 	if len(protoresp.Rows) > 0 {
 		pResult := splitRowPerColumn(protoresp.DebugStrings)
 		pResult.drawTable()

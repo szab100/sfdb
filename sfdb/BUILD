@@ -39,6 +39,10 @@ cc_binary(
 proto_library(
     name = "api_proto",
     srcs = ["api.proto"],
+    deps = [
+        "@com_google_protobuf//:any_proto",
+        "@com_google_protobuf//:descriptor_proto",
+    ],
 )
 
 cc_proto_library(

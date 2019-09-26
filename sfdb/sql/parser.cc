@@ -228,7 +228,7 @@ StatusOr<std::string> ParseColumnType(Parser *p) {
     return Err(p, StrCat("Expected column type, got ", t.ToString()));
   if (t.word.empty()) return Err(p, "Empty column type");
 
-std::string type = AsciiStrToLower(t.word);
+  std::string type = AsciiStrToLower(t.word);
   if (t.word == "Proto" || t.word == "Enum") {
     if (!p->MaybeConsumeToken(Token::LT))
       return Err(p, StrCat("Expected < after ", t.word));

@@ -1,7 +1,7 @@
-DROP TABLE LoadTest;
+DROP TABLE LoadTest IF NOT EXISTS;
 
-CREATE TABLE LoadTest (vm_id int64, location string, heartbeat_nanos int64);
-CREATE INDEX ById ON LoadTest (vm_id);
+CREATE TABLE LoadTest (vm_id int64, location string, heartbeat_nanos int64) IF NOT EXISTS;
+CREATE INDEX ById ON LoadTest (vm_id) IF NOT EXISTS;
 
 INSERT INTO LoadTest (vm_id, location) VALUES (37359, 'sfo');
 INSERT INTO LoadTest (vm_id, location) VALUES (3735, 'ny');

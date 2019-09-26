@@ -2,6 +2,9 @@ syntax = "proto2";
 
 package sfdb;
 
+import "google/protobuf/any.proto";
+import "google/protobuf/descriptor.proto";
+
 message ExecSqlRequest {
   optional string sql = 1;
 
@@ -10,11 +13,14 @@ message ExecSqlRequest {
 }
 
 message ExecSqlResponse {
-  // Rows as binary-encoded protobufs.
-  repeated bytes rows = 1;
+  // Descriptors of included messages
+  optional google.protobuf.FileDescriptorSet descriptors = 1;
 
-  // Rows as text-encoded protobufs.
-  repeated string debug_strings = 2;
+  // Rows as dynamic messages
+  repeated google.protobuf.Any rows = 2;
+
+  // Rows as text-encoded protobufs (if include_debug_strings = true in request)
+  repeated string debug_strings = 3;
 }
 
 service SfdbService {

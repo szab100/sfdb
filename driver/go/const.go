@@ -21,25 +21,8 @@
  */
 package sfdb
 
-import sfdb_pb "github.com/googlegsa/sfdb/api_go_proto"
+import (
+	"github.com/golang/glog"
+)
 
-type result struct {
-	lastInsertID int64
-	rowsAffected int64
-}
-
-func (r *result) LastInsertId() (int64, error) {
-	return r.lastInsertID, nil
-}
-
-func (r *result) RowsAffected() (int64, error) {
-	return r.rowsAffected, nil
-}
-
-func NewResult(f *sfdb_pb.ExecSqlResponse) (*result, error) {
-	// TODO: implement properly when server-side support is done
-	return &result{
-		lastInsertID: 0,
-		rowsAffected: 1,
-	}, nil
-}
+const debugLevel glog.Level = 2

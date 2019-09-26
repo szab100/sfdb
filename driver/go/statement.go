@@ -104,7 +104,7 @@ func (s *stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (drive
 	return execRPC(ctx, processedQuery, s.conn)
 }
 
-// TODO(sabyrzhan@); Add here sanitization
+// TODO: Add sanitization here
 // for SQLi like 'OR 1=1', 'AND 1=2' etc.
 func sanitizeQuery(query string) error {
 	if len(query) == 0 {
@@ -157,23 +157,17 @@ func queryRPC(ctx context.Context, query string, conn *Connection) (driver.Rows,
 		return nil, err
 	}
 
-	r := &rows{
-		raw:          pbResp.Rows,
-		debugStrings: pbResp.DebugStrings,
-	}
-
-	if err = r.Parse(); err != nil {
-		return nil, err
-	}
-
-	return r, nil
+	rows, err := NewRows(*pbResp.Descriptors, pbResp.Rows)
+	return rows, err
 }
 
 // execRPC sends a preprocessed query in statement to SFDB via RPC.
 func execRPC(ctx context.Context, query string, conn *Connection) (driver.Result, error) {
-	_, err := SendRPC(ctx, query, conn)
+	pbResp, err := SendRPC(ctx, query, conn)
 	if err != nil {
 		return nil, err
 	}
-	return driver.ResultNoRows, nil
+
+	result, err := NewResult(pbResp)
+	return result, err
 }

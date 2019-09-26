@@ -26,6 +26,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_split.h"
 #include "glog/logging.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/message.h"
 #include "sfdb/base/ast.h"
 #include "sfdb/base/typed_ast.h"
@@ -89,8 +90,7 @@ Status RaftInstance::OnAppend(string_view msg, void *arg) {
 
   VLOG(2) << "Executing SQL statement @" << mut.time_nanos();
   StatusOr<std::unique_ptr<Ast>> ast_so = Parse(mut.sql());
-  if (!ast_so.ok())
-    return ast_so.status();
+  if (!ast_so.ok()) return ast_so.status();
   std::unique_ptr<Ast> ast = std::move(ast_so.ValueOrDie());
   std::unique_ptr<ProtoPool> tmp_pool = db_->pool->Branch();
   if (ast->IsMutation()) {
@@ -98,20 +98,27 @@ Status RaftInstance::OnAppend(string_view msg, void *arg) {
   } else {
     std::vector<std::unique_ptr<Message>> rows;
     Status s = ExecuteRead(std::move(ast), tmp_pool.get(), db_, &rows);
-    if (!s.ok() || !arg)
-      return s;
+    if (!s.ok() || !arg) return s;
 
     // If this replica is the original recipient of the RPC, respond.
     auto p = (std::pair<const ExecSqlRequest *, ExecSqlResponse *> *)arg;
     const ExecSqlRequest &request = *(p->first);
     ExecSqlResponse *response = p->second;
-    for (size_t i = 0; i < rows.size(); ++i) {
-      response->add_rows(rows[i]->SerializeAsString());
-      if (request.include_debug_strings())
-        response->add_debug_strings(rows[i]->ShortDebugString());
+
+    if (!rows.empty()) {
+      // Fill metadata info
+      auto file_descriptor = tmp_pool->FindProtoFile(rows[0]->GetDescriptor()->name());
+      google::protobuf::FileDescriptorSet* file_desc_set = new google::protobuf::FileDescriptorSet();
+      file_descriptor->CopyTo(file_desc_set->add_file());
+      response->set_allocated_descriptors(file_desc_set);
+      for (size_t i = 0; i < rows.size(); ++i) {
+        response->add_rows()->PackFrom(*rows[i], std::string());
+        if (request.include_debug_strings())
+          response->add_debug_strings(rows[i]->ShortDebugString());
+      }
     }
     return OkStatus();
   }
 }
 
-} // namespace sfdb
+}  // namespace sfdb

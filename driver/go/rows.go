@@ -25,54 +25,132 @@ package sfdb
 
 import (
 	"database/sql/driver"
+	"errors"
+	"io"
+	"reflect"
+	"strings"
+
 	log "github.com/golang/glog"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/golang/protobuf/ptypes/any"
+	"github.com/jhump/protoreflect/desc"
+	"github.com/jhump/protoreflect/dynamic"
 )
 
 type rows struct {
-	// rows as byte-encoded protobufs (byte stream), big-endian byte order.
-	// Example: query returns 1 item: [[8 1 18 8 65 65 65 65 65 65 65 65]]
-	// 08 - wiretype = 0, varint:
-	//	0000 1000
-	//		- drop MSB
-	//	 000 1000
-	//		- last 3 bits represent a wiretype (0b000 -> 0x0)
-	//		- 4th least significant bit - proto field number = 1
-	// 01 - value = 1
-	//	0000 0001
-	//		- no MSB, value is 0x1
-	// 18 - wiretype = 2, string:
-	//	0001 0010
-	//		- wiretype = 010 -> 0x2, string
-	//		- field number = 0
-	// 08 - string length
-	// 65 .. 65 - 0x41
-	raw [][]byte
-	// parsed rows pointers to Row structs
-	parsed []*Row
+	// client side cursor pointing to current record
+	current_row int
+	// rows as byte-encoded protobufs (byte stream)
+	raw_rows []*any.Any
+	// contains cached column names or column indexes
+	column_names []string
+	// contains cached column types
+	column_types []*ColumnType
 	// rows as text-encoded protobufs
 	debugStrings []string
+	message      *dynamic.Message
 }
 
-// Row is a struct of deserialized protobuf from "rows->raw" field.
-type Row struct {
-	columns []string
-	values  []interface{}
+func NewRows(file_desc_set descriptor.FileDescriptorSet, row_msgs []*any.Any) (*rows, error) {
+	if len(row_msgs) == 0 {
+		return nil, errors.New("Empty resultset")
+	}
+
+	var importResolver desc.ImportResolver
+	fileDescriptor, err := importResolver.CreateFileDescriptorFromSet(&file_desc_set)
+	if err != nil {
+		log.Error("Cannot read descriptor in proto response")
+		return nil, err
+	}
+
+	msgTypeUrl := row_msgs[0].GetTypeUrl()
+	msgTypeId := msgTypeUrl[strings.LastIndex(msgTypeUrl, "/")+1:]
+	if len(msgTypeId) == 0 {
+		return nil, errors.New("Invalid message id in proto response")
+	}
+	msgDescriptor := fileDescriptor.FindMessage(msgTypeId)
+	if msgDescriptor == nil {
+		log.Error("Cannot find descriptor for message in proto response.")
+		return nil, errors.New("Cannot find descriptor for message in proto response.")
+	}
+
+	dmsg := dynamic.NewMessage(msgDescriptor)
+	column_names := make([]string, len(dmsg.GetKnownFields()))
+	column_types := make([]*ColumnType, len(dmsg.GetKnownFields()))
+	for i, fd := range dmsg.GetKnownFields() {
+		column_names[i] = fd.GetName()
+
+		ct, err := NewColumnType(fd)
+		if err != nil {
+			return nil, err
+		}
+		column_types[i] = ct
+	}
+
+	return &rows{
+		current_row:  0,
+		raw_rows:     row_msgs,
+		column_names: column_names,
+		column_types: column_types,
+		message:      dmsg,
+	}, nil
 }
 
 func (r *rows) Close() error {
+	log.V(debugLevel).Info("ROWS Close")
 	return nil
 }
 
-func (r *rows) Next([]driver.Value) error {
+func (r *rows) Next(values []driver.Value) error {
+	log.V(debugLevel).Info("ROWS Next")
+	if r.current_row >= len(r.raw_rows) {
+		log.V(debugLevel).Info("ROWS Next - EOF")
+		return io.EOF
+	}
+
+	err := r.message.Unmarshal(r.raw_rows[r.current_row].GetValue())
+	if err != nil {
+		return err
+	}
+
+	if len(values) != len(r.message.GetKnownFields()) {
+		return errors.New("Internal error: num fields in rows differs from expected")
+	}
+
+	for i, fd := range r.message.GetKnownFields() {
+		values[i] = r.message.GetField(fd)
+		log.V(debugLevel).Info("ROWS Next - Value[", i, "]: '", values[i], "'")
+	}
+
+	r.current_row += 1
+
 	return nil
 }
 
 func (r *rows) Columns() []string {
-	return nil
+	log.V(debugLevel).Info("ROWS Columns")
+	return r.column_names
 }
 
-// Parse (deserialize) rows->raw protobufs
-func (r *rows) Parse() error {
-	log.Info("BYTE STREAM: ", r.raw)
-	return nil
+func (r *rows) ColumnTypeDatabaseTypeName(index int) string {
+	return r.column_types[index].DatabaseTypeName()
+}
+
+func (r *rows) ColumnTypeLength(index int) (length int64, ok bool) {
+	length, ok = r.column_types[index].Length()
+	return
+}
+
+func (r *rows) ColumnTypeNullable(index int) (nullable, ok bool) {
+	nullable, ok = r.column_types[index].Nullable()
+	return
+}
+
+func (r *rows) ColumnTypePrecisionScale(index int) (precision, scale int64, ok bool) {
+	precision, scale, ok = r.column_types[index].DecimalSize()
+	return
+}
+
+func (r *rows) ColumnTypeScanType(index int) reflect.Type {
+	return r.column_types[index].ScanType()
 }

@@ -73,6 +73,8 @@ class ProtoPool {
 
   // Finds a type that was created with CreateProtoClass(name, ...).
   const ::google::protobuf::Descriptor *FindProtoClass(::absl::string_view name) const;
+  // Finds a proto file descriptor that was created with CreateProtoClass(name, ...).
+  const ::google::protobuf::FileDescriptor *FindProtoFile(::absl::string_view name) const;
 
   // Creates an empty proto given its descriptor.
   std::unique_ptr<::google::protobuf::Message> NewMessage(

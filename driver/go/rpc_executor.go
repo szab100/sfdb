@@ -76,4 +76,3 @@ func SendRPC(ctx context.Context, query string, conn *Connection) (*sfdb_pb.Exec
 		return nil, err
 	}
 }
-

@@ -34,6 +34,7 @@
 namespace sfdb {
 
 using ::absl::string_view;
+using ::absl::StrCat;
 using ::google::protobuf::Descriptor;
 using ::google::protobuf::DescriptorPool;
 using ::google::protobuf::DescriptorPoolDatabase;
@@ -42,6 +43,7 @@ using ::google::protobuf::DynamicMessageFactory;
 using ::google::protobuf::EnumDescriptor;
 using ::google::protobuf::FieldDescriptor;
 using ::google::protobuf::FieldDescriptorProto;
+using ::google::protobuf::FileDescriptor;
 using ::google::protobuf::FileDescriptorProto;
 using ::google::protobuf::MergedDescriptorDatabase;
 using ::google::protobuf::Message;
@@ -50,6 +52,10 @@ using ::google::protobuf::TextFormat;
 using ::util::InternalError;
 using ::util::InvalidArgumentError;
 using ::util::StatusOr;
+
+std::string GenProtoFileName(::absl::string_view name) {
+  return StrCat("sfdb/runtime/", name, ".proto");
+}
 
 // static
 FieldDescriptorProto::Type ProtoPool::TypeToType(FieldDescriptor::Type type) {
@@ -120,18 +126,24 @@ StatusOr<const Descriptor*> ProtoPool::CreateProtoClass(
   if (fdp->message_type_size() != 1) return InvalidArgumentError(
       "FileDescriptorProto must contain exactly one ProtoDescriptor");
   const std::string name = fdp->message_type(0).name();
+
+  // Check if descriptor already exists in client descriptor db
+  const Descriptor *ed = FindProtoClass(name);
+  if (ed) {
+    return ed;
+  }
+
   if (!overlay_db_->AddAndOwn(fdp.release()))
     return InternalError("Failed to create proto descriptor");
   const Descriptor *d = FindProtoClass(name);
-  if (!d) return InternalError("Created proto descriptor, but lost it.");
+  if (!d) return InternalError(StrCat("Created proto descriptor for ", name, ", but lost it."));
   return d;
 }
 
 StatusOr<const Descriptor*> ProtoPool::CreateProtoClass(
     string_view name, const std::vector<FieldDescriptorProto> &fields) {
   std::unique_ptr<FileDescriptorProto> file(new FileDescriptorProto);
-  file->set_name(StrCat(
-      "sfdb/runtime/", name, ".proto"));
+  file->set_name(GenProtoFileName(name));
   file->set_package("sfdb.runtime");
   file->set_syntax("proto2");
   DescriptorProto *message = file->add_message_type();
@@ -155,6 +167,10 @@ StatusOr<const Descriptor*> ProtoPool::CreateProtoClass(
 
 const Descriptor *ProtoPool::FindProtoClass(string_view name) const {
   return FindMessageTypeByName(StrCat("sfdb.runtime.", name));
+}
+
+const FileDescriptor *ProtoPool::FindProtoFile(string_view name) const {
+  return pool_->FindFileByName(GenProtoFileName(name));
 }
 
 std::unique_ptr<Message> ProtoPool::NewMessage(const Descriptor *d) const {

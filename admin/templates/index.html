@@ -1,0 +1,99 @@
+{{define "title"}}SFDB admin{{end}}
+
+{{define "body"}}
+  <div ng-controller="MainCtrl" class="md-padding" layout="column" >
+
+  <section layout="row" flex>
+    <md-sidenav
+      class="md-sidenav-left md-whiteframe-4dp"
+      md-component-id="left"
+      md-is-locked-open="true"
+      md-whiteframe="4">
+
+      <md-toolbar class="md-theme-indigo">
+        <h1 class="md-toolbar-tools">SFDB admin</h1>
+      </md-toolbar>
+
+      <md-content layout-padding>
+        <div layout="column" layout-align="top center">
+          <form name="connectionForm">
+            <div layout="row">
+              <md-input-container flex="50">
+                 <label>Host</label>
+                 <input required name="host" ng-model="db.host">
+                 <div ng-messages="connectionForm.host.$error">
+                    <div ng-message="required">This is required.</div>
+                 </div>
+              </md-input-container>
+
+              <md-input-container flex="50">
+                 <label>Port</label>
+                 <input required type="number"
+                        max="65535"
+                        min="1000"
+                        name="port" ng-model="db.port">
+                 <div ng-messages="connectionForm.port.$error">
+                    <div ng-message="required">This is required.</div>
+                 </div>
+              </md-input-container>
+            </div>
+
+            <md-input-container class="md-block">
+              <label>TTL</label>
+              <md-select ng-model="db.ttl">
+                <md-option ng-repeat="ttl in ttls" ng-value="ttl.value">
+                  <span ng-bind="ttl.value"></span>
+                </md-option>
+              </md-select>
+            </md-input-container>
+
+            <md-button type="submit"
+                       class="md-raised md-primary"
+                       ng-disabled="connectionForm.invalid"
+                       ng-click="toggleConnection()">
+              <span ng-if="!connected">Connect</span>
+              <span ng-if="connected">Disconnect</span>
+            </md-button>
+          </form>
+        </div>
+      </md-content>
+    </md-sidenav>
+
+    <md-content flex>
+      <div layout="column">
+
+      <md-toolbar class="md-theme-indigo" style="background-color: white; color: rgb(63,81,181)">
+        <h1 class="md-toolbar-tools">Database content</h1>
+      </md-toolbar>
+
+      <md-card>
+        <md-card-title>
+          <span class="md-headline">Tables</span>
+        </md-card-title>
+
+        <md-card-content>
+          <table>
+            <thead>
+              <th>#</th>
+              <th>Name</th>
+            </thead>
+            <tbody>
+              <tr ng-repeat="t in tables" ng-if="tables.length">
+                <td><span ng-bind="$index + 1"></span></td>
+                <td><span ng-bind="t"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </md-card-content>
+
+        <md-card-actions layout="row" layout-align="end center">
+          <md-button ng-click="showTables()">Refresh</md-button>
+        </md-card-actions>
+      </md-card>
+
+      </div>
+    </md-content>
+
+  </section>
+</div>
+{{end}}

@@ -1,7 +1,9 @@
 package admin
 
 import (
-	"html/template"
+	"bytes"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -30,15 +32,16 @@ func (app *App) RegisterHandlers() {
 	app.Router.PathPrefix("/static/").Handler(
 		http.StripPrefix("/static/", fs))
 
-	app.Router.HandleFunc("/", serveTpl)
+	app.Router.HandleFunc("/", serveTpl).Methods("GET")
+	app.Router.HandleFunc("/{page}.html", serveTpl).Methods("GET")
 
 	// rest-api
 	app.Router.HandleFunc("/api/connect", app.connectDb).Methods("POST")
 	app.Router.HandleFunc("/api/close", app.closeDb).Methods("POST")
 
 	app.Router.HandleFunc("/api/{db}", app.showTables).Methods("GET")
-	app.Router.HandleFunc("/api/{db}/{table}", app.getTable).Methods("GET")
-	app.Router.HandleFunc("/api/{db}/{table}", app.createTable).Methods("POST")
+	//app.Router.HandleFunc("/api/{db}/{table}", app.getTable).Methods("GET")
+	app.Router.HandleFunc("/api/{db}/create", app.createTable).Methods("POST")
 	app.Router.HandleFunc("/api/{db}/{table}", app.deleteTable).Methods("DELETE")
 	app.Router.HandleFunc("/api/{db}/{table}/query", app.query).Methods("POST")
 	app.Router.HandleFunc("/api/{db}/{table}/exec", app.exec).Methods("POST")
@@ -46,8 +49,6 @@ func (app *App) RegisterHandlers() {
 
 // serve template files
 func serveTpl(w http.ResponseWriter, r *http.Request) {
-	lp := filepath.Join(cwd, "templates", "layout.html")
-
 	if r.URL.Path == "/" {
 		r.URL.Path = "index.html"
 	}
@@ -69,18 +70,12 @@ func serveTpl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseFiles(lp, fp)
-	if err != nil {
-		// Log the detailed error
-		log.Println(err.Error())
-		// Return a generic "Internal Server Error" message
-		http.Error(w, http.StatusText(500), 500)
-		return
-	}
+	// Send headers
+	w.Header().Set("Content-Type", "text/html")
 
-	if err := tmpl.ExecuteTemplate(w, "layout", nil); err != nil {
-		log.Println(err.Error())
-		http.Error(w, http.StatusText(500), 500)
+	streamContent, err := ioutil.ReadFile(fp)
+	b := bytes.NewBuffer(streamContent)
+	if _, err := b.WriteTo(w); err != nil {
+		fmt.Fprintf(w, "%s\n", err)
 	}
 }
-

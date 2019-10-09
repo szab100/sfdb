@@ -1,0 +1,29 @@
+<md-toolbar class="md-theme-indigo" style="background-color: white; color: rgb(63,81,181)">
+    <h1 class="md-toolbar-tools">Database content</h1>
+  </md-toolbar>
+
+  <md-card>
+    <md-card-title>
+      <span class="md-headline">Tables</span>
+    </md-card-title>
+
+    <md-card-content>
+      <table>
+        <thead>
+          <th>#</th>
+          <th>Name</th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="t in tables" ng-if="tables.length">
+            <td><span ng-bind="$index + 1"></span></td>
+            <td><span ng-bind="t"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </md-card-content>
+
+    <md-card-actions layout="row" layout-align="end center">
+      <md-button ng-click="showTables()">Show</md-button>
+      <md-button ng-click="createTable()">Create</md-button>
+    </md-card-actions>
+  </md-card>

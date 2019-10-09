@@ -1,0 +1,51 @@
+<md-card>
+  <md-card-title>
+    <span class="md-headline">Create table</span>
+  </md-card-title>
+
+  <md-card-content>
+      <div layout="row">
+        <md-input-container>
+          <label>Name</label>
+          <input ng-model="field_name">
+        </md-input-container>
+
+        <md-input-container>
+          <md-select ng-model="field_type">
+              <label>FieldType</label>
+              <md-option ng-repeat="ft in field_types" ng-value="ft">
+                {{ft}}
+              </md-option>
+            </md-select>
+        </md-input-container>
+        <md-input-container>
+            <md-button ng-click="addField()">Add field</md-button>
+        </md-input-container>
+      </div>
+      <md-input-container>
+          <label>Table name</label>
+          <input ng-model="table_name">
+      </md-input-container>
+      <table>
+          <thead>
+            <th>#</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th></th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="f in fields">
+              <td><span ng-bind="$index + 1"></span></td>
+              <td><span ng-bind="f.name"></span></td>
+              <td><span ng-bind="f.field_type"></span></td>
+              <td><md-button ng-click="removeField($index)">Remove</md-button></td>
+            </tr>
+          </tbody>
+        </table>
+  </md-card-content>
+
+  <md-card-actions layout="row" layout-align="end center">
+    <md-button ng-click="createTable()">Create</md-button>
+    <md-button ng-click="cancelCreateTable()">Cancel</md-button>
+  </md-card-actions>
+</md-card>

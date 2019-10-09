@@ -17,6 +17,16 @@ type App struct {
         DB      *sql.DB
 }
 
+type TableField struct {
+	Name string `json:"name"`
+	FieldType string `json:"field_type"`
+}
+
+type CreateTableArg struct {
+	TableName string `json:"table_name"`
+	Fields []TableField `json:"fields"`
+}
+
 func (app *App) connectDb(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 
@@ -172,9 +182,26 @@ func (app *App) createTable(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	_ = params["db"]
-	tableName := params["table"]
 
-	_, err := app.DB.Exec("CREATE TABLE ? IF NOT EXISTS", tableName)
+	var arg CreateTableArg
+	err := json.NewDecoder(r.Body).Decode(&arg)
+	if err != nil {
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var field_str = ""
+
+	// TODO: Add checks?
+	for _, f := range arg.Fields {
+		if field_str != "" {
+			field_str += ", "
+		}
+		field_str += f.Name + " " + f.FieldType
+	}
+
+	_, err = app.DB.Exec("CREATE TABLE ?(?) IF NOT EXISTS", arg.TableName, field_str)
 	if err != nil {
 		app.Logger.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

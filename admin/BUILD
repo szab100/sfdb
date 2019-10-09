@@ -11,8 +11,14 @@ go_library(
     ],
     data = [
         "static/app.js",
+        "static/connection.js",
+        "static/home.js",
+        "static/table_list.js",
+        "static/create_table.js",
+        "templates/home.html",
+        "templates/table_list.html",
+        "templates/create_table.html",
         "templates/index.html",
-        "templates/layout.html",
     ],
     deps = [
         "//sfdb:api_go_proto",

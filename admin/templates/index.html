@@ -1,150 +1,82 @@
-{{define "title"}}SFDB admin{{end}}
+<!DOCTYPE html>
+<html ng-app="sfdb" lang="en">
 
-{{define "body"}}
-  <div ng-controller="MainCtrl" class="md-padding" layout="column" >
+<head>
+  <title>SFDB admin</title>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.20/angular-material.min.js"></script>
+</head>
 
-  <section layout="row" flex>
-    <md-sidenav
-      class="md-sidenav-left md-whiteframe-4dp"
-      md-component-id="left"
-      md-is-locked-open="true"
-      md-whiteframe="4">
+<body>
+  <div class="md-padding" layout="column">
 
-      <md-toolbar class="md-theme-indigo">
-        <h1 class="md-toolbar-tools">SFDB admin</h1>
-      </md-toolbar>
+    <section layout="row" flex>
+      <md-sidenav class="md-sidenav-left md-whiteframe-4dp" md-component-id="left" md-is-locked-open="true"
+        md-whiteframe="4">
 
-      <md-content layout-padding>
-        <div layout="column" layout-align="top center">
-          <form name="connectionForm">
-            <div layout="row">
-              <md-input-container flex="50">
-                 <label>Host</label>
-                 <input required name="host" ng-model="db.host">
-                 <div ng-messages="connectionForm.host.$error">
+        <md-toolbar class="md-theme-indigo">
+          <h1 class="md-toolbar-tools">SFDB admin</h1>
+        </md-toolbar>
+
+        <md-content layout-padding ng-controller="ConnectionController">
+          <div layout="column" layout-align="top center">
+            <form name="connectionForm">
+              <div layout="row">
+                <md-input-container flex="50">
+                  <label>Host</label>
+                  <input required name="host" ng-model="db.host">
+                  <div ng-messages="connectionForm.host.$error">
                     <div ng-message="required">This is required.</div>
-                 </div>
+                  </div>
+                </md-input-container>
+
+                <md-input-container flex="50">
+                  <label>Port</label>
+                  <input required type="number" max="65535" min="1000" name="port" ng-model="db.port">
+                  <div ng-messages="connectionForm.port.$error">
+                    <div ng-message="required">This is required.</div>
+                  </div>
+                </md-input-container>
+              </div>
+
+              <md-input-container class="md-block">
+                <label>TTL</label>
+                <md-select ng-model="db.ttl">
+                  <md-option ng-repeat="ttl in ttls" ng-value="ttl.value">
+                    <span ng-bind="ttl.value"></span>
+                  </md-option>
+                </md-select>
               </md-input-container>
 
-              <md-input-container flex="50">
-                 <label>Port</label>
-                 <input required type="number"
-                        max="65535"
-                        min="1000"
-                        name="port" ng-model="db.port">
-                 <div ng-messages="connectionForm.port.$error">
-                    <div ng-message="required">This is required.</div>
-                 </div>
-              </md-input-container>
-            </div>
+              <md-button type="submit" class="md-raised md-primary" ng-disabled="connectionForm.invalid"
+                ng-click="toggleConnection()">
+                <span ng-if="!connected">Connect</span>
+                <span ng-if="connected">Disconnect</span>
+              </md-button>
+            </form>
+          </div>
+        </md-content>
+      </md-sidenav>
 
-            <md-input-container class="md-block">
-              <label>TTL</label>
-              <md-select ng-model="db.ttl">
-                <md-option ng-repeat="ttl in ttls" ng-value="ttl.value">
-                  <span ng-bind="ttl.value"></span>
-                </md-option>
-              </md-select>
-            </md-input-container>
-
-            <md-button type="submit"
-                       class="md-raised md-primary"
-                       ng-disabled="connectionForm.invalid"
-                       ng-click="toggleConnection()">
-              <span ng-if="!connected">Connect</span>
-              <span ng-if="connected">Disconnect</span>
-            </md-button>
-          </form>
+      <md-content flex>
+        <div layout="column">
+          <div ng-view></div>
         </div>
       </md-content>
-    </md-sidenav>
 
-    <md-content flex>
-      <div layout="column">
+    </section>
+  </div>
 
-      <md-toolbar class="md-theme-indigo" style="background-color: white; color: rgb(63,81,181)">
-        <h1 class="md-toolbar-tools">Database content</h1>
-      </md-toolbar>
+  <script type="text/javascript" src="/static/app.js"></script>
+  <script type="text/javascript" src="/static/connection.js"></script>
+  <script type="text/javascript" src="/static/table_list.js"></script>
+  <script type="text/javascript" src="/static/create_table.js"></script>
+  <script type="text/javascript" src="/static/home.js"></script>
+</body>
 
-      <md-card>
-        <md-card-title>
-          <span class="md-headline">Tables</span>
-        </md-card-title>
-
-        <md-card-content>
-          <table>
-            <thead>
-              <th>#</th>
-              <th>Name</th>
-            </thead>
-            <tbody>
-              <tr ng-repeat="t in tables" ng-if="tables.length">
-                <td><span ng-bind="$index + 1"></span></td>
-                <td>
-                  <a href="#" class="link" ng-click="getTable(t)">
-                    <span ng-bind="t"></span>
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </md-card-content>
-
-        <md-card-actions layout="row">
-          <md-button class="md-raised" ng-click="showTables()">Refresh</md-button>
-        </md-card-actions>
-      </md-card>
-
-      <!-- Table description -->
-      <md-card ng-if="table.name">
-        <md-card-title>
-          <span class="md-headline" ng-bind="table.name"></span>
-        </md-card-title>
-
-        <md-card-content>
-          <div layout="row">
-            <table>
-              <thead>
-                <th>#</th>
-                <th>Field name</th>
-                <th>Field type</th>
-              </thead>
-              <tbody>
-                <tr ng-repeat="(k, v) in table.cols track by $index">
-                  <td><span ng-bind="$index + 1"></span></td>
-                  <td><span ng-bind="k"></span></td>
-                  <td style="padding-left: 10px"><span ng-bind="v"></span></td>
-                </tr>
-              </tbody>
-            </table>
-
-            <md-input-container style="margin-left: 50px">
-              <label>Query</label>
-              <input ng-model="request.query" type="text">
-            </md-input-container>
-
-            <div ng-if="data.length">
-              <table>
-                <tbody>
-                  <tr ng-repeat="row in data track by $index">
-                    <td ng-repeat="col in row">
-                      <span ng-bind="col"></span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </md-card-content>
-
-        <md-card-actions layout="row">
-          <md-button class="md-raised" ng-click="query()">Query</md-button>
-        </md-card-actions>
-      </md-card>
-
-      </div>
-    </md-content>
-
-  </section>
-</div>
-{{end}}
+</html>

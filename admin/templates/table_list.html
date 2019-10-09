@@ -12,11 +12,17 @@
         <thead>
           <th>#</th>
           <th>Name</th>
+          <th></th>
         </thead>
         <tbody>
           <tr ng-repeat="t in tables" ng-if="tables.length">
             <td><span ng-bind="$index + 1"></span></td>
             <td><span ng-bind="t"></span></td>
+            <td>
+                <md-button class="md-icon-button md-primary" aria-label="Delete" ng-click="deleteTable($index)">
+                    <md-icon md-font-set="material-icons">delete</md-icon>
+                </md-button>
+            </td>
           </tr>
         </tbody>
       </table>

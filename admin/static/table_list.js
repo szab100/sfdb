@@ -27,6 +27,21 @@ app.controller("TableListController",
         $location.path("create_table");
       }
 
+      $scope.deleteTable = function(table_index) {
+        var err = "";
+        if (!$scope.tables || table_index > $scope.tables.length) {
+          err = "Invalid table selected";
+          return;
+        }
+
+        var table_name = $scope.tables[table_index];
+
+        $http.delete('/api/' + $rootScope.db.name + '/' + table_name)
+          .then(function (resp) {
+            $scope.showTables();
+        });
+      }
+
       $scope.showTables();
     }
   ]

@@ -124,36 +124,46 @@ func (app *App) getTable(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, tableDescrs)
 }
 
+type Row struct {
+	fields []interface{} `json:"fields"`
+}
+
+type QueryResult struct {
+	cols []string `json:"cols"`
+	rows []Row    `json:"rows"`
+}
+
 func (app *App) query(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	_ = params["db"]
 
-	query, err := ioutil.ReadAll(r.Body)
+	query_, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	query := string(query_)
 
-	app.Logger.Println("Query is: ", string(query))
-
-	rows, err := app.DB.Query(string(query))
+	rows, err := app.DB.Query(query)
 	if err != nil {
 		app.Logger.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	data := []interface{}{}
+	data := QueryResult{}
+	data.cols, _ = rows.Columns()
 
 	for rows.Next() {
-		row := []interface{}{}
-		if err = rows.Scan(row...); err != nil {
+		row := Row{}
+		if err = rows.Scan(row.fields...); err != nil {
 			app.Logger.Println("could not scan row query")
 			continue
 		}
-		app.Logger.Println("Data: ", row)
-		data = append(data, row)
+		data.rows = append(data.rows, row)
 	}
+
+	app.Logger.Println("DATA: ", data.rows)
 
 	respondWithJSON(w, data)
 }

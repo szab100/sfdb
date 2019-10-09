@@ -47,6 +47,17 @@ func (app *App) closeDb(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func respondWithJSON(w http.ResponseWriter, payload interface{}) {
+	response, err := json.Marshal(payload)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}
+
 func (app *App) showTables(w http.ResponseWriter, r *http.Request) {
 	// TODO: Add the check for empty or non A-Z 'db' param
 	params := mux.Vars(r)
@@ -71,70 +82,71 @@ func (app *App) showTables(w http.ResponseWriter, r *http.Request) {
 		tables = append(tables, name)
 	}
 
-	// TODO:
-	if err = rows.Err(); err != nil {
-		panic(err)
-	}
+	respondWithJSON(w, tables)
+}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+func (app *App) getTable(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	// TODO: Currently, we operate only with the only DB (MAIN).
+	_ = params["db"]
+	tableName := params["table"]
 
-	if err = json.NewEncoder(w).Encode(tables); err != nil {
+	rows, err := app.DB.Query("DESCRIBE " + tableName)
+	if err != nil {
+		app.Logger.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	defer rows.Close()
+
+	tableDescrs := make(map[string]string)
+
+	for rows.Next() {
+		var fieldName string
+		var fieldType string
+		if err = rows.Scan(&fieldName, &fieldType); err != nil {
+			app.Logger.Println("could not parse table description")
+			continue
+		}
+		tableDescrs[fieldName] = fieldType
+	}
+
+	respondWithJSON(w, tableDescrs)
 }
 
-//func (app *App) getTable(w http.ResponseWriter, r *http.Request) {
-//	w.Header().Set("Content-Type", "application/json")
-//
-//	// TODO: Add the check for empty or non A-Z 'db, table' param
-//	params := mux.Vars(r)
-//	// TODO: Currently, we operate only with the only DB (MAIN).
-//	_ = params["db"]
-//	tableName := params["table"]
-//
-//	q := fmt.Sprintf("SELECT * FROM %s LIMIT 10", tableName)
-//	result, err := app.DB.Query(q)
-//	if err != nil {
-//		app.Logger.Println(err.Error())
-//		w.WriteHeader(http.StatusInternalServerError)
-//		return
-//	}
-//
-//	var table Table
-//	for result.Next() {
-//		result.Scan(&table)
-//	}
-//
-//	json.NewEncoder(w).Encode(table)
-//	w.WriteHeader(http.StatusOK)
-//}
+func (app *App) query(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	_ = params["db"]
 
-//func (app *App) query(w http.ResponseWriter, r *http.Request) {
-//	w.Header().Set("Content-Type", "application/json")
-//
-//	params := mux.Vars(r)
-//	_ = params["db"]
-//
-//	var query string
-//	_ = json.NewDecoder(r.Body).Decode(query)
-//
-//	result, err := app.DB.Query(query)
-//	if err != nil {
-//		app.Logger.Println(err.Error())
-//		w.WriteHeader(http.StatusInternalServerError)
-//		return
-//	}
-//
-//	var row driver.Rows
-//	for result.Next() {
-//		result.Scan(&row)
-//	}
-//
-//	json.NewEncoder(w).Encode(row)
-//	w.WriteHeader(http.StatusOK)
-//}
+	query, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	app.Logger.Println("Query is: ", string(query))
+
+	rows, err := app.DB.Query(string(query))
+	if err != nil {
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	data := []interface{}{}
+
+	for rows.Next() {
+		row := []interface{}{}
+		if err = rows.Scan(row...); err != nil {
+			app.Logger.Println("could not scan row query")
+			continue
+		}
+		app.Logger.Println("Data: ", row)
+		data = append(data, row)
+	}
+
+	respondWithJSON(w, data)
+}
 
 func (app *App) exec(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")

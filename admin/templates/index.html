@@ -80,14 +80,65 @@
             <tbody>
               <tr ng-repeat="t in tables" ng-if="tables.length">
                 <td><span ng-bind="$index + 1"></span></td>
-                <td><span ng-bind="t"></span></td>
+                <td>
+                  <a href="#" class="link" ng-click="getTable(t)">
+                    <span ng-bind="t"></span>
+                  </a>
+                </td>
               </tr>
             </tbody>
           </table>
         </md-card-content>
 
-        <md-card-actions layout="row" layout-align="end center">
-          <md-button ng-click="showTables()">Refresh</md-button>
+        <md-card-actions layout="row">
+          <md-button class="md-raised" ng-click="showTables()">Refresh</md-button>
+        </md-card-actions>
+      </md-card>
+
+      <!-- Table description -->
+      <md-card ng-if="table.name">
+        <md-card-title>
+          <span class="md-headline" ng-bind="table.name"></span>
+        </md-card-title>
+
+        <md-card-content>
+          <div layout="row">
+            <table>
+              <thead>
+                <th>#</th>
+                <th>Field name</th>
+                <th>Field type</th>
+              </thead>
+              <tbody>
+                <tr ng-repeat="(k, v) in table.cols track by $index">
+                  <td><span ng-bind="$index + 1"></span></td>
+                  <td><span ng-bind="k"></span></td>
+                  <td style="padding-left: 10px"><span ng-bind="v"></span></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <md-input-container style="margin-left: 50px">
+              <label>Query</label>
+              <input ng-model="request.query" type="text">
+            </md-input-container>
+
+            <div ng-if="data.length">
+              <table>
+                <tbody>
+                  <tr ng-repeat="row in data track by $index">
+                    <td ng-repeat="col in row">
+                      <span ng-bind="col"></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </md-card-content>
+
+        <md-card-actions layout="row">
+          <md-button class="md-raised" ng-click="query()">Query</md-button>
         </md-card-actions>
       </md-card>
 

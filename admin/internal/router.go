@@ -37,11 +37,11 @@ func (app *App) RegisterHandlers() {
 	app.Router.HandleFunc("/api/close", app.closeDb).Methods("POST")
 
 	app.Router.HandleFunc("/api/{db}", app.showTables).Methods("GET")
-	//app.Router.HandleFunc("/api/{db}/{table}", app.getTable).Methods("GET")
+	app.Router.HandleFunc("/api/{db}/{table}", app.getTable).Methods("GET")
 	app.Router.HandleFunc("/api/{db}/{table}", app.createTable).Methods("POST")
 	app.Router.HandleFunc("/api/{db}/{table}", app.deleteTable).Methods("DELETE")
-	//app.Router.HandleFunc("/api/{db}/query", app.query).Methods("POST")
-	app.Router.HandleFunc("/api/{db}/exec", app.exec).Methods("POST")
+	app.Router.HandleFunc("/api/{db}/{table}/query", app.query).Methods("POST")
+	app.Router.HandleFunc("/api/{db}/{table}/exec", app.exec).Methods("POST")
 }
 
 // serve template files

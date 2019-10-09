@@ -17,6 +17,18 @@
 
       $scope.tables = [];
 
+      $scope.table = {
+        name: "",
+        cols: []
+      };
+
+      $scope.request = {
+        query: ""
+      };
+
+      // response from query, exec
+      $scope.data = [];
+
       $scope.ttls = [];
       // TTL in seconds for gRPC connection
       angular.forEach([5, 15, 45], function(ttl) {
@@ -53,6 +65,8 @@
       $http.post('/api/close', {})
         .then(function (resp) {
           $scope.connected = false;
+          $scope.tables = [];
+          $scope.table = {};
           alert("Closed DB connection.");
         });
     }
@@ -61,6 +75,12 @@
     };
 
     $scope.query = function() {
+      var url = ['/api', $scope.db.name, $scope.table.name, "query"].join("/");
+      $http.post(url, $scope.request.query,
+          { headers: { 'Content-Type': "text/plain" }})
+        .then(function (resp) {
+          $scope.data = resp.data;
+        });
     };
 
     $scope.showTables = function() {
@@ -70,7 +90,14 @@
         });
     };
 
-    $scope.getTable = function() {
+    $scope.getTable = function(table) {
+      var url = ['/api', $scope.db.name, table].join("/");
+      $http.get(url)
+        .then(function (resp) {
+          $scope.table.name = table;
+          $scope.table.cols = resp.data;
+          console.log(resp.data);
+        });
     };
 
     $scope.createTable = function() {

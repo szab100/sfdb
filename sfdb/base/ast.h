@@ -73,6 +73,7 @@ class Ast {
     EXISTS,      // Checks if table(table_name) or index(index_name) exists
     SHOW_TABLES, //  ["People", "Contacts"]
     DESCRIBE_TABLE,  //  ["id", "int64"]["name", "string"]]
+    STAR,       // This special type is processed by Optimize(...)
 
     // Operators in increasing order of priority.
     OP_IN, OP_LIKE, OP_OR,
@@ -93,6 +94,7 @@ class Ast {
   const std::string &index_name() const { return index_name_; }
   const Ast *lhs() const { return lhs_.get(); }
   const Ast *rhs() const { return rhs_.get(); }
+
   const Value &value() const { return value_; }
   const std::vector<std::string> &columns() const { return columns_; }
   const std::string &column(int i) const { return columns_[i]; }
@@ -184,6 +186,9 @@ class Ast {
     CHECK(IsUnaryOp(op)) << "Called Ast::UnaryOp(" << TypeToString(op) << ")";
     return std::unique_ptr<Ast>(new Ast(op, "", "", nullptr, std::move(rhs)));
   }
+  static std::unique_ptr<Ast> Star() {
+    return std::unique_ptr<Ast>(new Ast(Type::STAR, "", "", nullptr, nullptr));
+  }
   static std::unique_ptr<Ast> QuotedString(::absl::string_view v) {
     return std::unique_ptr<Ast>(new Ast(
         VALUE, "", "", nullptr, nullptr, Value::String(v)));
@@ -234,6 +239,8 @@ class Ast {
         MAP, "", "", nullptr, std::move(rhs), Value::Bool(false),
         std::move(columns), {}, std::move(values)));
   }
+
+  static std::unique_ptr<Ast> Clone(const Ast *ast);
 
  protected:
   Ast(Type type = ERROR,

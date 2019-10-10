@@ -29,6 +29,11 @@ app.controller("TableListController",
 
       $scope.deleteTable = function(table_index) {
         var err = "";
+        if (!$rootScope.db) {
+          err = "No connection to DB";
+          return;
+        }
+
         if (!$scope.tables || table_index > $scope.tables.length) {
           err = "Invalid table selected";
           return;
@@ -40,6 +45,22 @@ app.controller("TableListController",
           .then(function (resp) {
             $scope.showTables();
         });
+      }
+
+      $scope.viewTable = function(table_index) {
+        var err = "";
+
+        if (!$rootScope.db) {
+          err = "No connection to DB";
+          return
+        }
+
+        if (!$scope.tables || table_index > $scope.tables.length) {
+          err = "Invalid table selected";
+          return;
+        }
+
+        $location.path("view_table").search({table_name: $scope.tables[table_index]});
       }
 
       $scope.showTables();

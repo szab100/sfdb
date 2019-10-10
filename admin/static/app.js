@@ -17,13 +17,9 @@ var app = angular
         templateUrl : 'create_table.html',
         controller : 'CreateTableController'
       })
-      .when('/blog', {
-        templateUrl : 'second.html',
-        controller : 'SecondController'
-      })
-      .when('/about', {
-        templateUrl : 'third.html',
-        controller : 'ThirdController'
+      .when('/view_table', {
+        templateUrl : 'view_table.html',
+        controller : 'ViewTableController'
       })
       .otherwise({redirectTo: '/home'});
     });

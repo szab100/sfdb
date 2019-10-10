@@ -346,5 +346,24 @@ TEST(EngineTest, CreateAndDropWithExists) {
       .ValueOrDie(), &pool, &db, &rows));
 }
 
+TEST(EngineTest, SelectStar) {
+  ProtoPool pool;
+  BuiltIns vars;
+  Db db("Test", &vars);
+  std::vector<std::unique_ptr<Message>> rows;
+
+  ASSERT_OK(Execute(Parse(
+      "CREATE TABLE People (name string, age int64);")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_OK(Execute(Parse(
+      "INSERT INTO People (name, age) VALUES ('bob', 16);")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_OK(Execute(Parse(
+      "SELECT * FROM People;")
+      .ValueOrDie(), &pool, &db, &rows));
+  ASSERT_EQ(1, rows.size());
+  EXPECT_EQ("name: \"bob\" age: 16", rows[0]->ShortDebugString());
+}
+
 }  // namespace
 }  // namespace sfdb

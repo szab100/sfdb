@@ -81,16 +81,21 @@ Status ExecuteRead(
   CHECK(!ast->IsMutation());
   ::absl::ReaderMutexLock lock(&db->mu);
 
-  StatusOr<std::unique_ptr<TypedAst>> so = InferResultTypes(
+  // Performs Ast preprocessing in given context. Basically it
+  // expands "*" in SELECT to full list of columns.
+  StatusOr<std::unique_ptr<Ast>> so = ExpandAst(
       std::move(ast), pool, db, db->vars.get());
-  if (!so.ok()) return so.status();
 
-  std::unique_ptr<TypedAst> oast = Optimize(*db, std::move(so.ValueOrDie()));
-  StatusOr<std::unique_ptr<ProtoStream>> so2 = GetProtoStream(*oast, pool, db);
-
+  StatusOr<std::unique_ptr<TypedAst>> so2 = InferResultTypes(
+      std::move(so.ValueOrDie()), pool, db, db->vars.get());
   if (!so2.ok()) return so2.status();
 
-  ProtoStream &ps = *so2.ValueOrDie();
+  std::unique_ptr<TypedAst> oast = Optimize(*db, std::move(so2.ValueOrDie()));
+  StatusOr<std::unique_ptr<ProtoStream>> so3 = GetProtoStream(*oast, pool, db);
+
+  if (!so3.ok()) return so3.status();
+
+  ProtoStream &ps = *so3.ValueOrDie();
   while (ps.ok() && !ps.Done()) {
     rows->push_back(pool->NewMessage(ps->GetDescriptor()));
     rows->back()->CopyFrom(*ps);

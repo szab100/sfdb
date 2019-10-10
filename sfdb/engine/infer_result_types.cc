@@ -21,6 +21,7 @@
  */
 #include "sfdb/engine/infer_result_types.h"
 
+#include <iterator>
 #include <string>
 
 #include "absl/strings/str_cat.h"
@@ -295,6 +296,67 @@ StatusOr<AstType> InferResultType(
 }
 
 }  // namespace
+
+::util::StatusOr<std::unique_ptr<Ast>> ExpandAst(
+    std::unique_ptr<Ast> &&ast,
+    ProtoPool *pool, const Db *db,
+    const Vars *vars) {
+
+  if (ast->type == Ast::MAP) {
+    // MAP may contain special value "*" which means that
+    // column list must include all columns. Get colum
+    // names from table and add create new ast.
+
+    // Find table to which * is reffering
+    const Ast *src = ast.get();
+    std::string src_table_name;
+
+    while(src) {
+      if (src->type != Ast::MAP
+        && src->type != Ast::FILTER
+        && src->type != Ast::TABLE_SCAN) {
+          break;
+      }
+      if (!src->table_name().empty()) {
+        src_table_name = src->table_name();
+        break;
+      }
+
+      src = src->rhs();
+    }
+
+    CHECK(ast->values().size() == ast->columns().size());
+    int n_columns = ast->values().size();
+
+    std::vector<std::unique_ptr<Ast>> new_values;
+    std::vector<std::string> new_columns;
+
+    for (int i = 0; i < n_columns; ++i) {
+      if (ast->values()[i]->type == Ast::STAR) {
+        if (src_table_name.empty()) {
+          return InternalError("Invalid sintax");
+        }
+
+        // Expand into full column list
+        auto t = db->FindTable(src_table_name);
+        auto d = t->type;
+
+        for (int i = 0; i < d->field_count(); ++i) {
+          const auto& column_name = d->field(i)->name();
+          new_columns.push_back(column_name);
+          new_values.push_back(Ast::Var(column_name));
+        }
+      } else {
+        new_columns.push_back(std::move(ast->columns()[i]));
+        new_values.push_back(Ast::Clone(ast->values()[i].get()));
+      }
+    }
+
+    return Ast::Map(std::move(new_columns), std::move(new_values), Ast::Clone(ast->rhs()));
+  }
+
+  return std::move(ast);
+}
 
 ::util::StatusOr<std::unique_ptr<TypedAst>> InferResultTypes(
     std::unique_ptr<Ast> &&ast, ProtoPool *pool, const Db *db,

@@ -111,5 +111,5 @@ func (ci *ColumnType) Nullable() (nullable, ok bool) {
 
 // TODO: implement
 func (ci *ColumnType) ScanType() reflect.Type {
-	return nil
+	return ci.reflect_type
 }

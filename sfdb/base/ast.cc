@@ -21,6 +21,7 @@
  */
 #include "sfdb/base/ast.h"
 
+#include <iterator>
 #include <ostream>
 #include <string>
 
@@ -49,6 +50,7 @@ std::string Ast::TypeToString(Type t) {
   switch (t) {
 #define C(x) case x: return #x
     C(ERROR);
+    C(STAR);
     C(IF); C(EXISTS);
     C(SHOW_TABLES); C(DESCRIBE_TABLE);
     C(CREATE_TABLE); C(CREATE_INDEX); C(DROP_TABLE); C(DROP_INDEX);
@@ -103,6 +105,46 @@ bool Ast::IsBinaryOp(Type t) {
     default:
       return false;
   }
+}
+
+std::unique_ptr<Ast> Ast::Clone(const Ast *ast) {
+  const Ast *lhs = ast->lhs();
+  std::unique_ptr<Ast> cloned_lhs;
+  if (lhs) {
+    cloned_lhs = Ast::Clone(lhs);
+  }
+
+  const Ast *rhs = ast->rhs();
+  std::unique_ptr<Ast> cloned_rhs;
+  if (rhs) {
+    cloned_rhs = Ast::Clone(rhs);
+  }
+
+  std::vector<std::unique_ptr<Ast>> values;
+  std::transform(ast->values_.begin(), ast->values_.end(), std::back_inserter(values),
+    [](const std::unique_ptr<Ast> &v) -> std::unique_ptr<Ast> {
+      return Ast::Clone(v.get());
+    }
+  );
+
+  Value value = ast->value_;
+  std::vector<std::string> columns = ast->columns();
+  std::vector<std::string> column_types = ast->column_types();
+  std::vector<int> column_indices = ast->column_indices();
+
+  return std::unique_ptr<Ast>(new Ast(
+    ast->type,
+    ast->table_name_,
+    ast->index_name_,
+    std::move(cloned_lhs),
+    std::move(cloned_rhs),
+    std::move(value),
+    std::move(columns),
+    std::move(column_types),
+    std::move(values),
+    ast->var_,
+    std::move(column_indices)
+  ));
 }
 
 }  // namespace sfdb

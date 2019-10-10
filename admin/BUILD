@@ -15,9 +15,11 @@ go_library(
         "static/home.js",
         "static/table_list.js",
         "static/create_table.js",
+        "static/view_table.js",
         "templates/home.html",
         "templates/table_list.html",
         "templates/create_table.html",
+        "templates/view_table.html",
         "templates/index.html",
     ],
     deps = [

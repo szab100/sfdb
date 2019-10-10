@@ -33,6 +33,10 @@
 
 namespace sfdb {
 
+::util::StatusOr<std::unique_ptr<Ast>> ExpandAst(
+    std::unique_ptr<Ast> &&ast, ProtoPool *pool, const Db *db, const Vars *vars)
+    SHARED_LOCKS_REQUIRED(db->mu);
+
 // Computes the result type for the given AST and its descendants, recursively.
 // Uses |vars| as the var context; set it to db->vars for ASTs executed in |db|.
 //

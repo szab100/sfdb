@@ -1,6 +1,7 @@
 package admin
 
 import (
+	//"flag"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -15,6 +16,12 @@ var (
 )
 
 func init() {
+	// Uncomment to enable verbose
+	// flag.Set("logtostderr", "true")
+	// flag.Set("stderrthreshold", "WARNING")
+	// flag.Set("v", "5")
+	// flag.Parse()
+
 	cwd_, err := os.Getwd()
 	cwd = cwd_ + "/admin/"
 	if err != nil {
@@ -40,7 +47,7 @@ func (app *App) RegisterHandlers() {
 	app.Router.HandleFunc("/api/close", app.closeDb).Methods("POST")
 
 	app.Router.HandleFunc("/api/{db}", app.showTables).Methods("GET")
-	//app.Router.HandleFunc("/api/{db}/{table}", app.getTable).Methods("GET")
+	app.Router.HandleFunc("/api/{db}/{table}", app.getTable).Methods("GET")
 	app.Router.HandleFunc("/api/{db}/create", app.createTable).Methods("POST")
 	app.Router.HandleFunc("/api/{db}/{table}", app.deleteTable).Methods("DELETE")
 	app.Router.HandleFunc("/api/{db}/{table}/query", app.query).Methods("POST")

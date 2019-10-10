@@ -285,6 +285,10 @@ StatusOr<std::unique_ptr<Ast>> ParseValue(Parser *p) {
     // Double.
     return Ast::Double(p->tokens[p->i++].dbl);
   }
+  if (p->NextTokenIs(Token::STAR)) {
+    p->i++;
+    return Ast::Star();
+  }
   if (p->NextTokenIs(Token::QUOTED_STRING)) {
     // Quoted string.
     return Ast::QuotedString(p->tokens[p->i++].str);

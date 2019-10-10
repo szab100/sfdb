@@ -25,7 +25,7 @@ app.controller("TableController",
           headers: { "Content-Type": "text/plain" }
         })
           .then(function (resp) {
-            $scope.data = resp.data
+            $scope.data = resp.data;
         });
       };
     }

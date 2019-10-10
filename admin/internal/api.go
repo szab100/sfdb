@@ -68,6 +68,12 @@ func respondWithJSON(w http.ResponseWriter, payload interface{}) {
 	w.Write(response)
 }
 
+func respondError(app *App, w http.ResponseWriter, err error) {
+	app.Logger.Println(err.Error())
+	w.WriteHeader(http.StatusInternalServerError)
+	return
+}
+
 func (app *App) showTables(w http.ResponseWriter, r *http.Request) {
 	// TODO: Add the check for empty or non A-Z 'db' param
 	params := mux.Vars(r)
@@ -75,9 +81,7 @@ func (app *App) showTables(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := app.DB.Query("SHOW TABLES")
 	if err != nil {
-		app.Logger.Println(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		respondError(app, w, err)
 	}
 	defer rows.Close()
 
@@ -103,9 +107,7 @@ func (app *App) getTable(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := app.DB.Query("DESCRIBE " + tableName)
 	if err != nil {
-		app.Logger.Println(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		respondError(app, w, err)
 	}
 	defer rows.Close()
 
@@ -123,6 +125,7 @@ func (app *App) getTable(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, tableDescrs)
 }
+
 
 type Row struct {
 	fields []interface{} `json:"fields"`
@@ -146,24 +149,38 @@ func (app *App) query(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := app.DB.Query(query)
 	if err != nil {
-		app.Logger.Println(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		respondError(app, w, err)
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		respondError(app, w, err)
 	}
 
-	data := QueryResult{}
-	data.cols, _ = rows.Columns()
+	rawResult := make([][]byte, len(cols))
+	result := make([]string, len(cols))
+
+	vals := make([]interface{}, len(cols))
+	for i, _ := range rawResult {
+		vals[i] = &rawResult[i]
+	}
+	data := [][]string{}
 
 	for rows.Next() {
-		row := Row{}
-		if err = rows.Scan(row.fields...); err != nil {
+		if err = rows.Scan(vals...); err != nil {
 			app.Logger.Println("could not scan row query")
 			continue
 		}
-		data.rows = append(data.rows, row)
+		for i, raw := range rawResult {
+			if raw == nil {
+				result[i] = "\\N"
+			} else {
+				result[i] = string(raw)
+			}
+		}
+		data = append(data, result)
 	}
-
-	app.Logger.Println("DATA: ", data.rows)
 
 	respondWithJSON(w, data)
 }
@@ -179,9 +196,7 @@ func (app *App) exec(w http.ResponseWriter, r *http.Request) {
 
 	_, err := app.DB.Exec(execStr)
 	if err != nil {
-		app.Logger.Println(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		respondError(app, w, err)
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -196,6 +211,8 @@ func (app *App) createTable(w http.ResponseWriter, r *http.Request) {
 	var arg CreateTableArg
 	err := json.NewDecoder(r.Body).Decode(&arg)
 	if err != nil {
+
+		return
 		app.Logger.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return

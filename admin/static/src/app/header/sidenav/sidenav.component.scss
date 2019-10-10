@@ -1,0 +1,85 @@
+.ogb__menu--sb-dboard {
+    background: #fff
+}
+
+.ogb__menu__top--sb-dboard {
+    background-color: rgba(6, 8, 21, .04)
+}
+
+a:focus {
+    outline: none !important;
+    border: none !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+}
+
+
+@media (min-width:320px) {
+    .ogb__menu__top--sb-dboard {
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex
+    }
+}
+
+@media (min-width:600px) {
+    .ogb__menu__top--sb-dboard {
+        display: none
+    }
+}
+
+@media (min-width:1024px) {
+    .ogb__menu__top--sb-dboard {
+        display: none
+    }
+}
+
+.ogb__menu__logo__svg--sb-dboard {
+    background-image: url(/assets/images/logo__74x24.svg);
+    background-repeat: no-repeat;
+    background-size: 74px 24px
+}
+
+.ogb__menu__product__label--sb-dboard,
+.ogb__menu__profile__apps--sb-dboard a[role=button] i {
+    color: rgba(6, 8, 21, .54)
+}
+
+.ogb__menu__profile__notifications--sb-dboard a[role=button] i {
+    color: #fff
+}
+
+.ogb__menu__profile__monogram--sb-dboard a {
+    background-color: rgba(6, 8, 21, .54)
+}
+
+.ogb__menu__profile__login--sb-dboard {
+    display: none
+}
+
+.ogb__menu__profile__login--sb-dboard a[role=button],
+.ogb__menu__profile__login--sb-dboard a[role=button].mdl-button {
+    background-color: #4285f4
+}
+
+.ogb__menu__items__group--sb-dboard {
+    border-top: 1px solid rgba(6, 8, 21, .12)
+}
+
+.ogb__menu__items__list__node--sb-dboard a:hover {
+    background-color: rgba(6, 8, 21, .04)
+}
+
+.ogb__menu__items__icon--sb-dboard i {
+    color: rgba(6, 8, 21, .54)
+}
+
+.ogb__menu__items__icon__placeholder--sb-dboard {
+    background-color: rgba(6, 8, 21, .54)
+}
+
+.ogb__menu__items__label--sb-dboard {
+    color: #767676;
+    font-size: 0.8rem;
+    font-weight: 400;
+}

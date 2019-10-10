@@ -1,0 +1,23 @@
+.ogb__tab {
+    font-size: 0.85rem;
+  }
+
+  .ogb__tab.active {
+    color: #536dfe;
+    font-weight: 500 !important;
+    border-bottom: 2px solid #536dfe;
+  }
+
+  .ogb__tab.active:after {
+    width: 0;
+  }
+
+  .ogb__tab--sb-dboard {
+    font-weight: 400;
+  }
+
+  .ogb__tabs--sb-dboard {
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex
+  }

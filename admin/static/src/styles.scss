@@ -1,0 +1,80 @@
+/* Material theme */
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* Material icons */
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+.mat-icon.mat-primary {
+  color: #4285F4;
+  margin-left: -6px;
+  margin-right: 2px;
+}
+
+/* Fonts */
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,500,700');
+
+[hidden] {
+    display: none !important;
+}
+
+html {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    color: #333;
+    font-size: 1em;
+    font-family: Roboto,arial,sans-serif;
+    font-weight: 400;
+    background-color: #eee;
+    height: 100%;
+}
+
+.mat-card {
+    margin: 5px;
+}
+
+.mat-card .mat-card-header-text {
+  margin: 0;
+}
+
+button.action-button {
+  float: left;
+  margin-right: 10px;
+}
+
+.ui-paginator .ui-paginator-page.ui-state-active {
+    background: #4285f4;
+    border-color: #87a2d0;
+}
+
+h1 {
+    display: block;
+    font-size: 2em;
+    margin-top: 0.67em;
+    margin-bottom: 0.67em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+
+h2 {
+    display: block;
+    font-size: 1.5em;
+    margin-top: 0.83em;
+    margin-bottom: 0.83em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}
+
+h3 {
+    display: block;
+    font-size: 1.17em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+}

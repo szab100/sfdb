@@ -1,0 +1,98 @@
+
+.main-container {
+    height: 100%;
+}
+
+.mat-icon-button {
+    margin: 2px;
+}
+
+.mat-icon {
+    font-size: 1.5rem;
+    color: rgba(6,8,21,.54);
+}
+
+@media (min-width:320px) {
+    .ogb__right--sb-dboard {
+        display: none;
+    }
+}
+
+@media (min-width:600px) {
+    .ogb__right--sb-dboard {
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+    }
+}
+
+@media (min-width:1024px) {
+    .ogb__right--sb-dboard {
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+    }
+}
+
+@media (min-width:320px) {
+    .ogb__navi--sb-dboard {
+        display: block;
+    }
+}
+
+@media (min-width:600px) {
+    .ogb__navi--sb-dboard {
+        display: block;
+    }
+}
+
+@media (min-width:1024px) {
+    .ogb__navi--sb-dboard {
+        display: block;
+    }
+}
+
+.ogb--sb-dboard {
+    background-color: #fff;
+    border-bottom: 0;
+    padding-bottom: 0;
+    box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12);
+}
+
+.ogb__navi--sb-dboard {
+  margin: 0 .25rem;
+}
+
+.ogb__navi--sb-dboard a[role=button] i {
+    color: rgba(6, 8, 21, .54);
+    margin: 0;
+}
+
+.ogb__logo--sb-dboard {
+  position: relative;
+  padding: 0 0 0 1rem;
+  top: 2px;
+}
+
+.ogb__logo__svg--sb-dboard {
+    background-image: url(/assets/images/logo__74x24.svg);
+    background-repeat: no-repeat;
+    background-size: 74px 24px;
+    margin: 0;
+}
+
+.ogb__product__label--sb-dboard {
+    display: inline;
+    padding-left: 8px;
+    color: rgba(6, 8, 21, .54);
+}
+
+.ogb__title--sb-dboard {
+    display: none;
+}
+
+.ogb__controls--sb-dboard {
+    display: none;
+}
+
+

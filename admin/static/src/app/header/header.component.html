@@ -1,0 +1,78 @@
+<mat-sidenav-container class="main-container">
+  <mat-sidenav #sidenav mode="over">
+      <app-header-sidenav></app-header-sidenav>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <!-- OGB -->
+    <div class="ogb ogb--sb-dboard">
+      <!-- OGB.Container -->
+      <div class="ogb__container ogb__container--sb-dboard">
+        <!-- OGB.Content -->
+        <div class="ogb__content ogb__content--sb-dboard">
+          <!-- OGB.Left -->
+          <div class="ogb__left ogb__left--sb-dboard">
+            <!-- OGB.Navi -->
+            <div class="ogb__navi ogb__navi--sb-dboard">
+              <button mat-icon-button (click)="sidenav.toggle()" aria-label="Toggle side navigation bar">
+                <mat-icon>menu</mat-icon>
+              </button>
+            </div>
+            <!-- end OGB.Navi -->
+            <!-- OGB.Logo -->
+            <div class="ogb__logo ogb__logo--sb-dboard">
+              <figure class="ogb__logo__svg ogb__logo__svg--sb-dboard"></figure>
+              <!-- OGB.Product -->
+              <div class="ogb__product ogb__product--sb-dboard">
+                <span class="ogb__product__label ogb__product__label--sb-dboard">Simple Fast Database</span>
+              </div>
+              <!-- end OGB.Product -->
+            </div>
+            <!-- end OGB.Logo -->
+            <!-- OGB.Title -->
+            <div class="ogb__title ogb__title--sb-dboard">
+              <div class="ogb__title__back ogb__title--sb-dboard">
+                <a role="button" id="trigger--actionBack" class="mdl-button mdl-js-button mdl-button--icon">
+                  <i class="material-icons">arrow_back</i>
+                </a>
+              </div>
+              <div class="ogb__title__path ogb__title__path--sb-dboard">
+                <span class="ogb__title__label ogb__title__label--sb-dboard">Title</span>
+              </div>
+            </div>
+            <!-- end OGB.Title -->
+          </div>
+          <!-- end OGB.Left -->
+          <!-- OGB.Middle -->
+          <div class="ogb__middle ogb__middle--sb-dboard">
+            <!-- <app-header-search></app-header-search> -->
+            <!-- OGB.Controls -->
+            <div class="ogb__controls ogb__controls--sb-dboard">
+              <div class="ogb__control ogb__control--sb-dboard">
+                <a role="button" class="mdl-button mdl-js-button mdl-button--icon ogb__control__container ogb__control__container--sb-dboard">
+                  <i class="material-icons">brightness_1</i>
+                </a>
+              </div>
+              <div class="ogb__control ogb__control--sb-dboard">
+                <a role="button" class="mdl-button mdl-js-button mdl-button--icon ogb__control__container ogb__control__container--sb-dboard">
+                  <i class="material-icons">brightness_1</i>
+                </a>
+              </div>
+            </div>
+            <!-- end OGB.Controls -->
+          </div>
+          <!-- end OGB.Middle -->
+          <!-- OGB.Right -->
+          <div class="ogb__right ogb__right--sb-dboard">
+            <!-- <app-header-profile></app-header-profile> -->
+          </div>
+          <!-- end OGB.Right -->
+        </div>
+        <!-- end OGB.Content -->
+        <app-header-navbar></app-header-navbar>
+      </div>
+      <!-- end OGB.Container -->
+    </div>
+    <!-- end OGB -->
+    <ng-content></ng-content>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -115,9 +115,9 @@ app.controller("ViewTableController",
         var column_name = $scope.table.columns[key];
         where_cond += column_name + " = ";
         if ($scope.table.column_types[column_name] === "int") {
-          where_cond += parseInt($scope.edit.original_row[key], 10).toString();
+          where_cond += $scope.edit.original_row[key].toString();
         } else if ($scope.table.column_types[column_name] === "bool") {
-          where_cond += parseInt($scope.edit.original_row[key], 10) == 0 ? false : true;
+          where_cond += $scope.edit.original_row[key] ? false : true;
         } else {
           where_cond += '"' + $scope.edit.original_row[key].toString() + '"';
         }

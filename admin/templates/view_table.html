@@ -1,35 +1,54 @@
+
 <md-toolbar class="md-theme-indigo" style="background-color: white; color: rgb(63,81,181)">
-    <h1 class="md-toolbar-tools">Database content</h1>
-  </md-toolbar>
+  <h1 class="md-toolbar-tools">Database content</h1>
+</md-toolbar>
 
-  <md-card>
-    <md-card-title>
-      <span class="md-headline">Tables</span>
-    </md-card-title>
+<md-card>
+  <md-card-title>
+    <span class="md-headline">{{table_name}} contents</span>
+  </md-card-title>
 
-    <md-card-content>
-      <table>
-        <thead>
-          <th>#</th>
-          <th ng-repeat="c in table.columns" ng-if="table.columns.length">
-            <span ng-bind="c"></span>
-          </th>
-          <th></th>
-        </thead>
-        <tbody>
-          <tr ng-repeat="r in table.rows" ng-if="table.rows.length">
-            <td><span ng-bind="$index + 1"></span></td>
-            <td ng-repeat="c in table.columns" ng-if="table.columns.length">
-                <span ng-bind="r[$index]"></span>
-            </td>
-            <td>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </md-card-content>
+  <md-card-content>
+    <!--
+    <md-button class="md-icon-button md-primary" aria-label="View" ng-click="toggleEditForm()">
+        <md-icon md-font-set="material-icons" ng-if="hide_edit">expand_more</md-icon>
+        <md-icon md-font-set="material-icons" ng-if="!hide_edit">expand_less</md-icon>
+    </md-button>
+    <form name="editForm" ng-if="edit" class="md-dense" ng-hide="hide_edit" class="ng-hide">
+      <div layout="row" ng-repeat="c in edit.columns" ng-if="edit.columns.length">
+          <md-input-container>
+            <label>{{c}}</label>
+            <input ng-model="edit.values[c]">
+          </md-input-container>
+        </div>
+        <div layout="row">
+          <md-input-container>
+            <md-button ng-click="insertRow()">Insert row</md-button>
+          </md-input-container>
+      </div>
+    </form>-->
+    <table>
+      <thead>
+        <th>#</th>
+        <th ng-repeat="c in table.columns" ng-if="table.columns.length">
+          <span ng-bind="c"></span>
+        </th>
+        <th></th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="r in table.rows" ng-if="table.rows.length">
+          <td><span ng-bind="$index + 1"></span></td>
+          <td ng-repeat="c in table.columns" ng-if="table.columns.length">
+              <span ng-bind="r[$index]"></span>
+          </td>
+          <td>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </md-card-content>
 
-    <md-card-actions layout="row" layout-align="end center">
-      <md-button ng-click="goBack()">Back</md-button>
-    </md-card-actions>
-  </md-card>
+  <md-card-actions layout="row" layout-align="end center">
+    <md-button ng-click="goToTableList()">Table list</md-button>
+  </md-card-actions>
+</md-card>

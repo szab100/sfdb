@@ -9,24 +9,6 @@
   </md-card-title>
 
   <md-card-content>
-    <!--
-    <md-button class="md-icon-button md-primary" aria-label="View" ng-click="toggleEditForm()">
-        <md-icon md-font-set="material-icons" ng-if="hide_edit">expand_more</md-icon>
-        <md-icon md-font-set="material-icons" ng-if="!hide_edit">expand_less</md-icon>
-    </md-button>
-    <form name="editForm" ng-if="edit" class="md-dense" ng-hide="hide_edit" class="ng-hide">
-      <div layout="row" ng-repeat="c in edit.columns" ng-if="edit.columns.length">
-          <md-input-container>
-            <label>{{c}}</label>
-            <input ng-model="edit.values[c]">
-          </md-input-container>
-        </div>
-        <div layout="row">
-          <md-input-container>
-            <md-button ng-click="insertRow()">Insert row</md-button>
-          </md-input-container>
-      </div>
-    </form>-->
     <table>
       <thead>
         <th>#</th>
@@ -42,10 +24,34 @@
               <span ng-bind="r[$index]"></span>
           </td>
           <td>
+              <md-button class="md-icon-button md-primary" aria-label="View" ng-click="showUpdateForm($index)">
+                  <md-icon md-font-set="material-icons">edit</md-icon>
+              </md-button>
           </td>
         </tr>
       </tbody>
     </table>
+    <div layout="row">
+      <!-- TODO: implement enable/disable when form is shown -->
+      <md-button ng-click="showInsertForm()">Insert row</md-button>
+    </div>
+    <form name="editForm" ng-if="edit" class="md-dense" ng-hide="hide_edit" class="ng-hide">
+        <div layout="row" ng-repeat="c in edit.columns" ng-if="edit.columns.length">
+            <md-input-container>
+              <label>{{c}}</label>
+              <input ng-model="edit.values[c]">
+            </md-input-container>
+          </div>
+          <div layout="row">
+            <md-input-container ng-if="edit.mode === 'insert'">
+              <md-button ng-click="insertRow()">Insert more</md-button>
+              <md-button ng-click="insertSingleRow()">Insert one</md-button>
+            </md-input-container>
+            <md-input-container ng-if="edit.mode === 'update'">
+                <md-button ng-click="updateRow()">Update row</md-button>
+            </md-input-container>
+        </div>
+      </form>
   </md-card-content>
 
   <md-card-actions layout="row" layout-align="end center">

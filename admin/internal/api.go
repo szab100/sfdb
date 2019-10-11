@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reflect"
 	"strings"
 
 	_ "github.com/googlegsa/sfdb/driver/go"
@@ -30,8 +31,9 @@ type CreateTableArg struct {
 }
 
 type Table struct {
-	Columns []string        `json:"columns"`
-	Rows    [][]interface{} `json:"rows"`
+	Columns     []string          `json:"columns"`
+	ColumnTypes map[string]string `json:"column_types"`
+	Rows        [][]interface{}   `json:"rows"`
 }
 
 func respondJson(app *App, w http.ResponseWriter, payload interface{}) {
@@ -51,6 +53,27 @@ func processRows(app *App, rows *sql.Rows, w http.ResponseWriter) (table Table) 
 		app.Logger.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+
+	column_types, err := rows.ColumnTypes()
+	if err != nil {
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	table.ColumnTypes = make(map[string]string)
+
+	for i, ct := range column_types {
+		if ct.ScanType().ConvertibleTo(reflect.TypeOf(int64(0))) || ct.ScanType().ConvertibleTo(reflect.TypeOf(uint64(0))) {
+			table.ColumnTypes[table.Columns[i]] = "int"
+		} else if ct.ScanType().ConvertibleTo(reflect.TypeOf(bool(false))) {
+			table.ColumnTypes[table.Columns[i]] = "bool"
+		} else if ct.ScanType().ConvertibleTo(reflect.TypeOf(string(""))) {
+			table.ColumnTypes[table.Columns[i]] = "string"
+		} else {
+			table.ColumnTypes[table.Columns[i]] = ""
+		}
 	}
 
 	for rows.Next() {
@@ -212,10 +235,13 @@ func (app *App) exec(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	_ = params["db"]
 
-	var execStr string
-	_ = json.NewDecoder(r.Body).Decode(execStr)
-
-	_, err := app.DB.Exec(execStr)
+	query, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	app.Logger.Println(string(query))
+	_, err = app.DB.Query(string(query))
 	if err != nil {
 		respondError(app, w, err)
 	}

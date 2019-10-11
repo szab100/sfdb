@@ -18,6 +18,8 @@ app.controller("TableController",
       };
 
       $scope.query = function() {
+        // clear first
+        $scope.data = {};
         var url = ['api', $rootScope.db.name,
                    $scope.table.name, 'query'].join('/');
 

@@ -17,7 +17,11 @@
         <tbody>
           <tr ng-repeat="t in tables" ng-if="tables.length">
             <td><span ng-bind="$index + 1"></span></td>
-            <td><span ng-bind="t"></span></td>
+            <td>
+              <a class="link" href="#" ng-click="describeTable(t)">
+                <span ng-bind="t"></span>
+              </a>
+            </td>
             <td>
                 <md-button class="md-icon-button md-primary" aria-label="Delete" ng-click="deleteTable($index)">
                     <md-icon md-font-set="material-icons">delete</md-icon>

@@ -61,7 +61,18 @@ app.controller("TableListController",
         }
 
         $location.path("view_table").search({table_name: $scope.tables[table_index]});
-      }
+      };
+
+      $scope.describeTable = function(table_name) {
+        $http.post(['/api', $rootScope.db.name, table_name, 'describe'].join('/'))
+            .then(function (resp) {
+              $rootScope.table = {
+                fields: resp.data,
+                name: table_name,
+              };
+              $location.path("table");
+            });
+      };
 
       $scope.showTables();
     }

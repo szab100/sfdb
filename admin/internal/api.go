@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	_ "github.com/googlegsa/sfdb/driver/go"
 	"github.com/gorilla/mux"
@@ -33,9 +34,48 @@ type Table struct {
 	Rows    [][]interface{} `json:"rows"`
 }
 
-func (app *App) connectDb(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
+func respondJson(app *App, w http.ResponseWriter, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 
+	if err := json.NewEncoder(w).Encode(payload); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		app.Logger.Println("Failed to encode result: ", err.Error())
+	}
+}
+
+func processRows(app *App, rows *sql.Rows, w http.ResponseWriter) (table Table) {
+	var err error
+	table.Columns, err = rows.Columns()
+	if err != nil {
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	for rows.Next() {
+		row_contents := make([]interface{}, len(table.Columns))
+		row_contents_ptr := make([]interface{}, len(table.Columns))
+		for i, _ := range row_contents_ptr {
+			row_contents_ptr[i] = &row_contents[i]
+		}
+		if err := rows.Scan(row_contents_ptr...); err != nil {
+			app.Logger.Println("WARN: could't parse rows: ", err.Error())
+			continue
+		}
+		table.Rows = append(table.Rows, row_contents)
+	}
+
+	if err = rows.Err(); err != nil {
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	return table
+}
+
+func (app *App) connectDb(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -58,8 +98,11 @@ func (app *App) connectDb(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) closeDb(w http.ResponseWriter, r *http.Request) {
-	// TODO: check error on close action
-	app.DB.Close()
+	if err := app.DB.Close(); err != nil {
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -81,18 +124,25 @@ func respondError(app *App, w http.ResponseWriter, err error) {
 }
 
 func (app *App) showTables(w http.ResponseWriter, r *http.Request) {
-	// TODO: Add the check for empty or non A-Z 'db' param
 	params := mux.Vars(r)
-	_ = params["db"]
+	db := params["db"]
+	if strings.TrimSpace(db) == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	rows, err := app.DB.Query("SHOW TABLES")
 	if err != nil {
 		respondError(app, w, err)
 	}
-	defer rows.Close()
 
 	tables := []string{}
+	if cols, _ := rows.Columns(); len(cols) == 0 {
+		respondJson(app, w, tables)
+		return
+	}
 
+	defer rows.Close()
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
@@ -102,43 +152,10 @@ func (app *App) showTables(w http.ResponseWriter, r *http.Request) {
 		tables = append(tables, name)
 	}
 
-	respondWithJSON(w, tables)
+	respondJson(app, w, tables)
 }
 
 func (app *App) getTable(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	// TODO: Currently, we operate only with the only DB (MAIN).
-	_ = params["db"]
-	tableName := params["table"]
-
-	rows, err := app.DB.Query("DESCRIBE " + tableName)
-	if err != nil {
-		respondError(app, w, err)
-	}
-	defer rows.Close()
-
-	tableDescrs := make(map[string]string)
-
-	for rows.Next() {
-		var fieldName string
-		var fieldType string
-		if err = rows.Scan(&fieldName, &fieldType); err != nil {
-			app.Logger.Println("could not parse table description")
-			continue
-		}
-		tableDescrs[fieldName] = fieldType
-	}
-
-	respondWithJSON(w, tableDescrs)
-}
-
-type Row struct {
-	fields []interface{} `json:"fields"`
-}
-
-func (app *App) getTable(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	// TODO: Add the check for empty or non A-Z 'db, table' param
 	params := mux.Vars(r)
 	// TODO: Currently, we operate only with the only DB (MAIN).
@@ -154,72 +171,44 @@ func (app *App) getTable(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	if cols, _ := rows.Columns(); len(cols) == 0 {
+		respondJson(app, w, Table{})
+		return
+	}
+
 	defer rows.Close()
 
-	var table Table
-	table.Columns, err = rows.Columns()
+	table := processRows(app, rows, w)
+	respondJson(app, w, table)
+}
+
+func (app *App) query(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	_ = params["db"]
+
+	query, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	rows, err := app.DB.Query(string(query))
 	if err != nil {
 		app.Logger.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	for rows.Next() {
-		row_contents := make([]interface{}, len(table.Columns))
-		row_contents_ptr := make([]interface{}, len(table.Columns))
-		for i, _ := range row_contents_ptr {
-			row_contents_ptr[i] = &row_contents[i]
-		}
-		if err := rows.Scan(row_contents_ptr...); err != nil {
-			app.Logger.Println("WARN: could't parse rows: ", err.Error())
-			continue
-		}
-		table.Rows = append(table.Rows, row_contents)
-	}
-
-	// TODO:
-	if err = rows.Err(); err != nil {
-		panic(err)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err = json.NewEncoder(w).Encode(table); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		app.Logger.Println("Failed to encode result: ", err.Error())
+	if cols, _ := rows.Columns(); len(cols) == 0 {
+		respondJson(app, w, Table{})
 		return
 	}
+	defer rows.Close()
+
+	table := processRows(app, rows, w)
+	respondJson(app, w, table)
 }
 
-//func (app *App) query(w http.ResponseWriter, r *http.Request) {
-//	w.Header().Set("Content-Type", "application/json")
-//
-//	params := mux.Vars(r)
-//	_ = params["db"]
-//
-//	var query string
-//	_ = json.NewDecoder(r.Body).Decode(query)
-//
-//	result, err := app.DB.Query(query)
-//	if err != nil {
-//		app.Logger.Println(err.Error())
-//		w.WriteHeader(http.StatusInternalServerError)
-//		return
-//	}
-//
-//	var row driver.Rows
-//	for result.Next() {
-//		result.Scan(&row)
-//	}
-//
-//	json.NewEncoder(w).Encode(row)
-//	w.WriteHeader(http.StatusOK)
-//}
-
 func (app *App) exec(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	params := mux.Vars(r)
 	_ = params["db"]
 
@@ -230,13 +219,10 @@ func (app *App) exec(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondError(app, w, err)
 	}
-
 	w.WriteHeader(http.StatusOK)
 }
 
 func (app *App) createTable(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	params := mux.Vars(r)
 	_ = params["db"]
 
@@ -266,13 +252,10 @@ func (app *App) createTable(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 }
 
 func (app *App) deleteTable(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	params := mux.Vars(r)
 	_ = params["db"]
 	tableName := params["table"]
@@ -283,6 +266,38 @@ func (app *App) deleteTable(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
+}
+
+func (app *App) describeTable(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	_ = params["db"]
+	tableName := params["table"]
+
+	rows, err := app.DB.Query("DESCRIBE " + tableName)
+	if err != nil {
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	tableDescrs := make(map[string]string)
+
+	if cols, _ := rows.Columns(); len(cols) == 0 {
+		respondJson(app, w, tableDescrs)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var fieldName string
+		var fieldType string
+		if err = rows.Scan(&fieldName, &fieldType); err != nil {
+			app.Logger.Println("could not parse table description")
+			continue
+		}
+		tableDescrs[fieldName] = fieldType
+	}
+
+	respondJson(app, w, tableDescrs)
 }

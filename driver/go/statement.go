@@ -157,6 +157,10 @@ func queryRPC(ctx context.Context, query string, conn *Connection) (driver.Rows,
 		return nil, err
 	}
 
+	if pbResp.Descriptors == nil {
+		return nil, nil
+	}
+
 	rows, err := NewRows(*pbResp.Descriptors, pbResp.Rows)
 	return rows, err
 }

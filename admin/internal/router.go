@@ -52,7 +52,7 @@ func (app *App) RegisterHandlers() {
 	app.Router.HandleFunc("/api/{db}/{table}", app.deleteTable).Methods("DELETE")
 	app.Router.HandleFunc("/api/{db}/{table}/query", app.query).Methods("POST")
 	app.Router.HandleFunc("/api/{db}/exec", app.exec).Methods("POST")
-	app.Router.HandleFunc("/api/{db}/{table}/describe", app.describeTable).Methods("POST")
+	app.Router.HandleFunc("/api/{db}/{table}/describe", app.describeTable).Methods("GET")
 }
 
 // serve template files

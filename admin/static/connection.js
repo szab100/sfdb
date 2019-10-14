@@ -36,8 +36,8 @@ app.controller("ConnectionController",
             $scope.db.host, ":", $scope.db.port, "/",
             $scope.db.name, "?", "ttl=", $scope.db.ttl);
 
-        $http.post('/api/connect', connString, {
-          headers: { 'Content-Type': "text/plain" }
+        $http.post('/api/connect', JSON.parse('{ "conn_str": "' + connString + '" }'), {
+          headers: { 'Content-Type': "application/json" }
         })
           .then(function(resp) {
             $scope.connected = true;

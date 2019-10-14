@@ -21,12 +21,12 @@
       </div>
       <div layout="row">
         <mat-form-field class="inp-full-width">
-          <input matInput name="db" formControlName="db" [disableControl]="api.isConnected()" placeholder="DB Name (optional, default: MAIN)">
+          <input matInput name="db" formControlName="db" [disableControl]="api.isConnected()" placeholder="DB Name (optional)">
           <mat-error *ngIf="hasError('db', 'maxlength')">Must be lass than 20 characters</mat-error>
         </mat-form-field>
 
         <mat-form-field class="inp-full-width">
-          <input matInput name="ttl" formControlName="ttl" type="number" [disableControl]="api.isConnected()" placeholder="TTL (optional, default: 5s)">
+          <input matInput name="ttl" formControlName="ttl" type="number" [disableControl]="api.isConnected()" placeholder="TTL (seconds, optional)">
           <mat-error *ngIf="hasError('ttl', 'min')">Minimum value: 1</mat-error>
           <mat-error *ngIf="hasError('ttl', 'max')">Maximum value: 600</mat-error>
         </mat-form-field>

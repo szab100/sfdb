@@ -16,8 +16,8 @@ export class ConnectionComponent implements OnInit {
     this.connectionForm = new FormGroup({
       hostname: new FormControl('localhost', [Validators.required, Validators.maxLength(60)]),
       port: new FormControl('27910', [Validators.required, Validators.min(1), Validators.max(65535)]),
-      db: new FormControl('', [Validators.maxLength(20)]),
-      ttl: new FormControl('', [Validators.min(1), Validators.max(600)])
+      db: new FormControl('MAIN', [Validators.maxLength(20)]),
+      ttl: new FormControl('5', [Validators.min(1), Validators.max(600)])
     });
   }
 

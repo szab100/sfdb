@@ -64,7 +64,7 @@ app.controller("TableListController",
       };
 
       $scope.describeTable = function(table_name) {
-        $http.post(['/api', $rootScope.db.name, table_name, 'describe'].join('/'))
+        $http.get(['/api', $rootScope.db.name, table_name, 'describe'].join('/'))
             .then(function (resp) {
               $rootScope.table = {
                 fields: resp.data,

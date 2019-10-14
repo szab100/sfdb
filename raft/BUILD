@@ -110,6 +110,7 @@ cc_library(
         ":raft_proto_cc_grpc",
         "//util/task:status",
         "//util/types",
+        "//util/varz",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",

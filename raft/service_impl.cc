@@ -28,6 +28,10 @@
 #include "absl/memory/memory.h"
 #include "glog/logging.h"
 #include "util/task/canonical_errors.h"
+#include "util/varz/varz.h"
+
+DEFINE_VARZ(std::string, leader_name, "");
+DEFINE_VARZ(int32, is_leader, 0);
 
 namespace raft {
 namespace {
@@ -58,9 +62,15 @@ ServiceImpl::ServiceImpl(const Options &opts)
 void ServiceImpl::Start() {
   server_builder_->RegisterService(this);
   alarm_thread_.Start();
+  if (!varz::StartVarZService()) {
+    LOG(ERROR) << "Failed to start varz service";
+  }
 }
 
-void ServiceImpl::Stop() { alarm_thread_.Stop(); }
+void ServiceImpl::Stop() {
+  varz::StopVarZService();
+  alarm_thread_.Stop();
+}
 
 void ServiceImpl::Append(string_view msg) {
   LogEntry e;
@@ -303,6 +313,10 @@ void ServiceImpl::OnAlarm() {
     BroadcastAppendEntries(now);
     CommitEntries();
   }
+
+  // Track current leader state
+  VARZ_leader_name = leader_;
+  VARZ_is_leader = state_ == LEADER ? 1 : 0;
 }
 
 void ServiceImpl::AdvanceTermTo(uint64 term) {

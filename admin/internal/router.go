@@ -2,13 +2,19 @@ package admin
 
 import (
 	//"flag"
+<<<<<<< HEAD
 	"bytes"
 	"fmt"
 	"io/ioutil"
+=======
+>>>>>>> d12ceea... Adapt api to new Angular8 ui
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"io/ioutil"
+	"fmt"
+	"bytes"
 )
 
 var (
@@ -44,11 +50,12 @@ func (app *App) RegisterHandlers() {
 
 	// rest-api
 	app.Router.HandleFunc("/api/connect", app.connectDb).Methods("POST")
+	app.Router.HandleFunc("/api/ping", app.ping).Methods("GET")
 	app.Router.HandleFunc("/api/close", app.closeDb).Methods("POST")
 
 	app.Router.HandleFunc("/api/{db}", app.showTables).Methods("GET")
 	app.Router.HandleFunc("/api/{db}/{table}", app.getTable).Methods("GET")
-	app.Router.HandleFunc("/api/{db}/create", app.createTable).Methods("POST")
+	app.Router.HandleFunc("/api/{db}/{table}", app.createTable).Methods("POST")
 	app.Router.HandleFunc("/api/{db}/{table}", app.deleteTable).Methods("DELETE")
 	app.Router.HandleFunc("/api/{db}/{table}/query", app.query).Methods("POST")
 	app.Router.HandleFunc("/api/{db}/exec", app.exec).Methods("POST")
@@ -87,3 +94,4 @@ func serveTpl(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%s\n", err)
 	}
 }
+

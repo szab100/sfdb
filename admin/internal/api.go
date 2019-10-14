@@ -26,14 +26,17 @@ type TableField struct {
 }
 
 type CreateTableArg struct {
-	TableName string       `json:"table_name"`
-	Fields    []TableField `json:"fields"`
+	Fields []TableField `json:"fields"`
 }
 
 type Table struct {
 	Columns     []string          `json:"columns"`
 	ColumnTypes map[string]string `json:"column_types"`
 	Rows        [][]interface{}   `json:"rows"`
+}
+
+type ConnectArg struct {
+	ConnStr string `json:"conn_str"`
 }
 
 func respondJson(app *App, w http.ResponseWriter, payload interface{}) {
@@ -99,15 +102,18 @@ func processRows(app *App, rows *sql.Rows, w http.ResponseWriter) (table Table) 
 }
 
 func (app *App) connectDb(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	var arg ConnectArg
+	err := json.NewDecoder(r.Body).Decode(&arg)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	db, err := sql.Open("sfdb", string(body))
+	db, err := sql.Open("sfdb", arg.ConnStr)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		app.Logger.Println(err.Error())
 		return
 	}
 
@@ -117,6 +123,14 @@ func (app *App) connectDb(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.DB = db
+	w.WriteHeader(http.StatusOK)
+}
+
+func (app *App) ping(w http.ResponseWriter, r *http.Request) {
+	if err := app.DB.Ping(); err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -243,7 +257,9 @@ func (app *App) exec(w http.ResponseWriter, r *http.Request) {
 	app.Logger.Println(string(query))
 	_, err = app.DB.Query(string(query))
 	if err != nil {
-		respondError(app, w, err)
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
@@ -251,6 +267,7 @@ func (app *App) exec(w http.ResponseWriter, r *http.Request) {
 func (app *App) createTable(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	_ = params["db"]
+	tableName := params["table"]
 
 	var arg CreateTableArg
 	err := json.NewDecoder(r.Body).Decode(&arg)
@@ -272,7 +289,7 @@ func (app *App) createTable(w http.ResponseWriter, r *http.Request) {
 		field_str += f.Name + " " + f.FieldType
 	}
 
-	_, err = app.DB.Exec("CREATE TABLE ?(?) IF NOT EXISTS", arg.TableName, field_str)
+	_, err = app.DB.Exec("CREATE TABLE ?(?) IF NOT EXISTS", tableName, field_str)
 	if err != nil {
 		app.Logger.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

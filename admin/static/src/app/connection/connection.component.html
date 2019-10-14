@@ -1,3 +1,41 @@
-<p>
-  connection works!
-</p>
+<mat-card class="card">
+  <mat-card-header>
+    <mat-card-title>Connection</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+
+    <form name="connectionForm" [formGroup]="connectionForm" (ngSubmit)="connect()">
+      <div layout="row">
+        <mat-form-field class="inp-full-width">
+          <input matInput name="hostname" formControlName="hostname" [disableControl]="api.isConnected()" placeholder="Hostname">
+          <mat-error *ngIf="hasError('hostname', 'required')">Hostname is required</mat-error>
+          <mat-error *ngIf="hasError('hostname', 'maxlength')">Must be lass than 60 characters</mat-error>
+        </mat-form-field>
+
+        <mat-form-field class="inp-full-width">
+          <input matInput name="port" formControlName="port" type="number" [disableControl]="api.isConnected()" placeholder="Port number">
+          <mat-error *ngIf="hasError('port', 'required')">Port number is required</mat-error>
+          <mat-error *ngIf="hasError('port', 'min')">Minimum value: 1</mat-error>
+          <mat-error *ngIf="hasError('port', 'max')">Maximum value: 65535</mat-error>
+        </mat-form-field>
+      </div>
+      <div layout="row">
+        <mat-form-field class="inp-full-width">
+          <input matInput name="db" formControlName="db" [disableControl]="api.isConnected()" placeholder="DB Name (optional, default: MAIN)">
+          <mat-error *ngIf="hasError('db', 'maxlength')">Must be lass than 20 characters</mat-error>
+        </mat-form-field>
+
+        <mat-form-field class="inp-full-width">
+          <input matInput name="ttl" formControlName="ttl" type="number" [disableControl]="api.isConnected()" placeholder="TTL (optional, default: 5s)">
+          <mat-error *ngIf="hasError('ttl', 'min')">Minimum value: 1</mat-error>
+          <mat-error *ngIf="hasError('ttl', 'max')">Maximum value: 600</mat-error>
+        </mat-form-field>
+      </div>
+    </form>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-raised-button color="primary" [disabled]="!connectionForm.valid" *ngIf="!api.isConnected()"
+      (click)="connect()">Connect</button>
+    <button mat-raised-button color="primary" *ngIf="api.isConnected()" (click)="disconnect()">Disconnect</button>
+  </mat-card-actions>
+</mat-card>

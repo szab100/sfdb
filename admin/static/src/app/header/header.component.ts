@@ -1,4 +1,5 @@
 import { Component, OnInit, AfterViewInit, ElementRef } from '@angular/core';
+import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-header',
@@ -7,7 +8,7 @@ import { Component, OnInit, AfterViewInit, ElementRef } from '@angular/core';
 })
 export class HeaderComponent implements OnInit, AfterViewInit {
 
-  constructor() { }
+  constructor(private api: ApiService) { }
 
   ngOnInit() {
   }

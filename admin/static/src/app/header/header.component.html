@@ -1,6 +1,6 @@
 <mat-sidenav-container class="main-container">
   <mat-sidenav #sidenav mode="over">
-      <app-header-sidenav></app-header-sidenav>
+    <app-header-sidenav></app-header-sidenav>
   </mat-sidenav>
   <mat-sidenav-content>
     <!-- OGB -->
@@ -48,12 +48,14 @@
             <!-- OGB.Controls -->
             <div class="ogb__controls ogb__controls--sb-dboard">
               <div class="ogb__control ogb__control--sb-dboard">
-                <a role="button" class="mdl-button mdl-js-button mdl-button--icon ogb__control__container ogb__control__container--sb-dboard">
+                <a role="button"
+                  class="mdl-button mdl-js-button mdl-button--icon ogb__control__container ogb__control__container--sb-dboard">
                   <i class="material-icons">brightness_1</i>
                 </a>
               </div>
               <div class="ogb__control ogb__control--sb-dboard">
-                <a role="button" class="mdl-button mdl-js-button mdl-button--icon ogb__control__container ogb__control__container--sb-dboard">
+                <a role="button"
+                  class="mdl-button mdl-js-button mdl-button--icon ogb__control__container ogb__control__container--sb-dboard">
                   <i class="material-icons">brightness_1</i>
                 </a>
               </div>
@@ -73,6 +75,7 @@
       <!-- end OGB.Container -->
     </div>
     <!-- end OGB -->
+    <div class="connection-indicator-bar" [ngClass]="{'connection-up': api.isConnected()}"></div>
     <ng-content></ng-content>
   </mat-sidenav-content>
 </mat-sidenav-container>

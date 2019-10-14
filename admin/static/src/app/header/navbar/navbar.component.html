@@ -3,9 +3,9 @@
   <div id="scrollable--tabsBoundaries" class="ogb__tabs__boundaries ogb__tabs__boundaries--sb-dboard">
     <div class="ogb__tabs__wrapper ogb__tabs__wrapper--sb-dboard">
       <button routerLink="/home" class="ogb__tab ogb__tab--sb-dboard mdl-button mdl-js-button mdl-js-ripple-effect" routerLinkActive="active">Home</button>
-      <button routerLink="/connection" class="ogb__tab ogb__tab--sb-dboard mdl-button mdl-js-button mdl-js-ripple-effect" routerLinkActive="active">Configuration</button>
-      <button routerLink="/tables" class="ogb__tab ogb__tab--sb-dboard mdl-button mdl-js-button mdl-js-ripple-effect" routerLinkActive="active">Logs</button>
-      <button routerLink="/stats" class="ogb__tab ogb__tab--sb-dboard mdl-button mdl-js-button mdl-js-ripple-effect" routerLinkActive="active">Statistics</button>
+      <button routerLink="/connection" class="ogb__tab ogb__tab--sb-dboard mdl-button mdl-js-button mdl-js-ripple-effect" routerLinkActive="active">Connection</button>
+      <button *ngIf="api.isConnected()" routerLink="/tables" class="ogb__tab ogb__tab--sb-dboard mdl-button mdl-js-button mdl-js-ripple-effect" routerLinkActive="active">Tables</button>
+      <button *ngIf="api.isConnected()" routerLink="/stats" class="ogb__tab ogb__tab--sb-dboard mdl-button mdl-js-button mdl-js-ripple-effect" routerLinkActive="active">Statistics</button>
     </div>
   </div>
 </div>

@@ -1,3 +1,35 @@
-<p>
-  tables works!
-</p>
+<mat-card class="card">
+  <mat-card-header>
+    <mat-card-title>Connection</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <table mat-table [dataSource]="tables" class="mat-elevation-z8 mat-table">
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef> Name </th>
+        <td mat-cell *matCellDef="let element"> {{element}} </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let element">
+            <button class="action-btn" mat-icon-button (click)="deleteTable($element)" aria-label="Delete">
+                <mat-icon>delete</mat-icon> Delete
+            </button>
+            <button class="action-btn" mat-icon-button (click)="viewTable($element)" aria-label="View">
+                <mat-icon>list</mat-icon> View
+            </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </mat-card-content>
+  <mat-card-actions>
+      <button mat-icon-button (click)="refreshTables()" aria-label="Refresh">Refresh</button>
+      <button mat-icon-button (click)="createTable()" aria-label="Create">Create</button>
+  </mat-card-actions>
+</mat-card>

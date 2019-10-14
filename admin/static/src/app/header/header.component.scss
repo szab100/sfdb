@@ -12,6 +12,22 @@
     color: rgba(6,8,21,.54);
 }
 
+.connection-indicator-bar {
+    display: block;
+    top: 0px;
+    position: relative;
+    background-color: #ff5c5c;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+    height: 2px;
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+}
+
+.connection-up {
+    background-color: #6fff5c;
+}
+
 @media (min-width:320px) {
     .ogb__right--sb-dboard {
         display: none;

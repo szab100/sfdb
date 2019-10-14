@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../services/api.service';
+import { first } from 'rxjs/operators';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-tables',
@@ -7,9 +10,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TablesComponent implements OnInit {
 
-  constructor() { }
+  displayedColumns: string[] = ['name', 'actions'];
+  tables: MatTableDataSource<String> = null;
+
+  constructor(private api: ApiService) { }
 
   ngOnInit() {
+    this.api.getTables().pipe(first()).subscribe(res => {console.log(res[0]);  this.tables = new MatTableDataSource(res)});
   }
-
 }

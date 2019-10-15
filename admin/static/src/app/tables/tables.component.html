@@ -36,7 +36,7 @@
         <mat-icon>refresh</mat-icon>
         Refresh
       </button>
-      <button mat-icon-button (click)="createTable()" aria-label="Create">
+      <button mat-icon-button [routerLink]="['/tables/create']" aria-label="Create">
         <mat-icon>add</mat-icon>
         Create
       </button>

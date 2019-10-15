@@ -132,5 +132,6 @@ export interface CreateTableArg {
 
 export interface Table {
     columns: string[],
-    rows: any[][]
+    rows: any[][],
+    column_types: string[][]
 }

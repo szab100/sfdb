@@ -6,7 +6,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 //import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatButtonModule, MatCardModule, MatIconModule, MatSidenavModule, MatRadioModule, MatInputModule, MatTableModule } from '@angular/material';
+import {
+  MatButtonModule, MatCardModule, MatIconModule, MatSidenavModule,
+  MatRadioModule, MatInputModule, MatTableModule, MatPaginatorModule,
+  MatSortModule, MatProgressSpinnerModule
+} from '@angular/material';
 
 import { ApiService } from './services/api.service';
 import { HttpErrorInterceptor } from './services/http-error.interceptor';
@@ -55,7 +59,10 @@ import { CreateTableComponent } from './tables/create/create.component';
     MatInputModule,
     MatSidenavModule,
     MatRadioModule,
-    MatTableModule
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatProgressSpinnerModule
 
   ],
   providers: [

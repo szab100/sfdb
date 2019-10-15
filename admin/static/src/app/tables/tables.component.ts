@@ -16,6 +16,14 @@ export class TablesComponent implements OnInit {
   constructor(private api: ApiService) { }
 
   ngOnInit() {
-    this.api.getTables().pipe(first()).subscribe(res => {console.log(res[0]);  this.tables = new MatTableDataSource(res)});
+    this.getTables();
+  }
+
+  refreshTables() {
+    this.getTables();
+  }
+
+  private getTables() {
+    this.api.getTables().pipe(first()).subscribe(res => {this.tables = new MatTableDataSource(res)});
   }
 }

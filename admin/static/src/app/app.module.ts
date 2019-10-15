@@ -4,17 +4,18 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 //import { FlexLayoutModule } from '@angular/flex-layout';
 import {
   MatButtonModule, MatCardModule, MatIconModule, MatSidenavModule,
   MatRadioModule, MatInputModule, MatTableModule, MatPaginatorModule,
   MatSortModule, MatProgressSpinnerModule
 } from '@angular/material';
+import { HighlightModule } from 'ngx-highlightjs';
+import sql from 'highlight.js/lib/languages/sql';
 
 import { ApiService } from './services/api.service';
 import { HttpErrorInterceptor } from './services/http-error.interceptor';
-
 
 import { HomeComponent } from './home/home.component';
 import { HeaderComponent } from './header/header.component';
@@ -28,6 +29,7 @@ import { DisableControlDirective } from './misc/disableFormControl.directive';
 import { DescribeTableComponent } from './tables/describe/describe.component';
 import { ViewTableComponent } from './tables/view/view.component';
 import { CreateTableComponent } from './tables/create/create.component';
+import { QueryComponent } from './query/query.component';
 
 @NgModule({
   declarations: [
@@ -43,15 +45,22 @@ import { CreateTableComponent } from './tables/create/create.component';
     DisableControlDirective,
     DescribeTableComponent,
     ViewTableComponent,
-    CreateTableComponent
+    CreateTableComponent,
+    QueryComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     //FlexLayoutModule,
+    HighlightModule.forRoot({
+      languages: function () {
+        return [{name: 'sql', func: sql}];
+      }
+    }),
     /* Angular Material */
     MatButtonModule,
     MatCardModule,

@@ -101,9 +101,11 @@ export class ApiService {
         return this.http.delete<any>(this.baseUrl + '/' + db + '/' + table, this.httpOptions);
     }
 
-    public query(query: string, db?: string): Observable<any> {
+    public query(query: string, db?: string): Observable<Table> {
         db = db ? db : ApiService.DEFAULT_DB_NAME;
-        return this.http.put<any>(this.baseUrl + '/' + db, JSON.stringify(query), this.httpOptions);
+        var request: any = {};
+        request.query = query;
+        return this.http.post<Table>(this.baseUrl + '/' + db, JSON.stringify(request), this.httpOptions);
     }
 
     public describeTable(table: string, db?: string): Observable<TableStructure> {

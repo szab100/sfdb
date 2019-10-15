@@ -223,11 +223,15 @@ func (app *App) query(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	_ = params["db"]
 
-	query, err := ioutil.ReadAll(r.Body)
+	var arg map[string]interface{}
+	err := json.NewDecoder(r.Body).Decode(&arg)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		app.Logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	query := arg["query"].(string)
+	log.Printf("Query: " + query)
 
 	rows, err := app.DB.Query(string(query))
 	if err != nil {

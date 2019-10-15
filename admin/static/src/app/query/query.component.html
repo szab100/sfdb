@@ -1,0 +1,28 @@
+<mat-card class="card">
+  <mat-card-header>
+    <mat-card-title>Query the selected DB</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="query" *ngIf="code?.length">
+      Query:
+      <pre><code class="query-code" [highlight]="code"></code></pre>
+    </div>
+    <form class="queryForm" [formGroup]="queryForm" (ngSubmit)="executeQuery()">
+      <mat-form-field class="query-editor">
+        <textarea matInput (keyup)="onKeyUp($event)" formControlName="query" cdkTextareaAutosize cdkAutosizeMinRows="5"
+          cdkAutosizeMaxRows="20" #autosize="cdkTextareaAutosize" placeholder="Type SQL code here"></textarea>
+      </mat-form-field>
+    </form>
+    <pre><code>{{response}}</code></pre>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-icon-button (click)="executeQuery()" [disabled]="!queryForm.valid" *ngIf="api.isConnected()" aria-label="Execute">
+      <mat-icon>play_arrow</mat-icon>
+      Execute
+    </button>
+    <button mat-icon-button (click)="clearEditor()" aria-label="Clear">
+      <mat-icon>clear</mat-icon>
+      Clear
+    </button>
+  </mat-card-actions>
+</mat-card>

@@ -10,10 +10,10 @@ import { first } from 'rxjs/operators';
 })
 export class QueryComponent implements OnInit {
   public queryForm: FormGroup;
-  private code: string;
-  private response: string;
+  public code: string;
+  public response: string;
 
-  constructor(private api: ApiService) { }
+  constructor(public api: ApiService) { }
 
   ngOnInit() {
     this.queryForm = new FormGroup({

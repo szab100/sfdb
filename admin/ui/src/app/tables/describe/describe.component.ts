@@ -15,11 +15,11 @@ export class DescribeTableComponent implements OnInit {
   @ViewChild(MatSort) sort: MatSort;
 
   private paramSub: any;
-  private tableName: string;
-  private tableData: any = [];
+  public tableName: string;
+  public tableData: any = [];
   displayedColumns: string[] = ["id", "name", "type"];
 
-  constructor(private api: ApiService, private route: ActivatedRoute) { }
+  constructor(public api: ApiService, private route: ActivatedRoute) { }
 
   ngOnInit() {
     this.paramSub = this.route.params.subscribe(params => {

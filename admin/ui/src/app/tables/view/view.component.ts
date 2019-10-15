@@ -19,8 +19,8 @@ export class ViewTableComponent implements OnInit, OnDestroy {
   @ViewChild(MatSort) sort: MatSort;
 
   private paramSub: any;
-  private tableName: string;
-  private tableData: any = [];
+  public tableName: string;
+  public tableData: any = [];
   displayedColumns: string[];
 
   constructor(private api: ApiService, private route: ActivatedRoute) { }

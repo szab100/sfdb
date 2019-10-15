@@ -8,7 +8,7 @@ import { ApiService } from '../services/api.service';
 })
 export class HeaderComponent implements OnInit, AfterViewInit {
 
-  constructor(private api: ApiService) { }
+  constructor(public api: ApiService) { }
 
   ngOnInit() {
   }

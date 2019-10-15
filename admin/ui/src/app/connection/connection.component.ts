@@ -10,7 +10,7 @@ import { ApiService } from '../services/api.service';
 export class ConnectionComponent implements OnInit {
   public connectionForm: FormGroup;
 
-  constructor(private api: ApiService) { }
+  constructor(public api: ApiService) { }
 
   ngOnInit() {
     this.connectionForm = new FormGroup({

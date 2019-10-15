@@ -31,6 +31,10 @@ import { ViewTableComponent } from './tables/view/view.component';
 import { CreateTableComponent } from './tables/create/create.component';
 import { QueryComponent } from './query/query.component';
 
+export function hljsLanguages() {
+  return [{ name: 'sql', func: sql }];
+}
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -57,9 +61,7 @@ import { QueryComponent } from './query/query.component';
     HttpClientModule,
     //FlexLayoutModule,
     HighlightModule.forRoot({
-      languages: function () {
-        return [{name: 'sql', func: sql}];
-      }
+      languages: hljsLanguages
     }),
     /* Angular Material */
     MatButtonModule,

@@ -84,13 +84,13 @@ export class ApiService {
         return this.http.get<any>(this.baseUrl + '/' + db, this.httpOptions);
     }
 
-    public getTable(table: string, db?: string): Observable<any> {
+    public getTable(table: string, db?: string): Observable<Table> {
         db = db ? db : ApiService.DEFAULT_DB_NAME;
         return this.http.get<any>(this.baseUrl + '/' + db + '/' + table, this.httpOptions);
     }
 
     public createTable(table: string, fields: TableField[], db?: string): Observable<any> {
-        const params = <CreateTableArg>{
+        const params = <TableStructure>{
             fields: fields
         }
         return this.http.post<any>(this.baseUrl + '/' + db + '/' + table, JSON.stringify(params), this.httpOptions);
@@ -104,6 +104,11 @@ export class ApiService {
     public query(query: string, db?: string): Observable<any> {
         db = db ? db : ApiService.DEFAULT_DB_NAME;
         return this.http.put<any>(this.baseUrl + '/' + db, JSON.stringify(query), this.httpOptions);
+    }
+
+    public describeTable(table: string, db?: string): Observable<TableStructure> {
+        db = db ? db : ApiService.DEFAULT_DB_NAME;
+        return this.http.get<any>(this.baseUrl + '/' + db + '/' + table + '/describe', this.httpOptions);
     }
 
     private setConnectionCheckerTimer() {
@@ -126,7 +131,7 @@ export interface TableField {
     field_type: string
 }
 
-export interface CreateTableArg {
+export interface TableStructure {
     fields: TableField[]
 }
 

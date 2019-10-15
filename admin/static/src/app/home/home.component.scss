@@ -1,13 +1,11 @@
-.home-div {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .home-card {
   width: 70%;
   height: 300px;
   margin: 10px auto;
-  max-width: 500px;
+  max-width: 450px;
+}
+
+.mat-card-content {
+  margin: 0px;
+  width: 100%;
 }

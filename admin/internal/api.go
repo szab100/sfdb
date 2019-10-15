@@ -25,7 +25,7 @@ type TableField struct {
 	FieldType string `json:"field_type"`
 }
 
-type CreateTableArg struct {
+type TableStructure struct {
 	Fields []TableField `json:"fields"`
 }
 
@@ -269,7 +269,7 @@ func (app *App) createTable(w http.ResponseWriter, r *http.Request) {
 	_ = params["db"]
 	tableName := params["table"]
 
-	var arg CreateTableArg
+	var arg TableStructure
 	err := json.NewDecoder(r.Body).Decode(&arg)
 	if err != nil {
 
@@ -324,23 +324,23 @@ func (app *App) describeTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tableDescrs := make(map[string]string)
+	//tableDescrs := make(map[string]string)
+	table := TableStructure{}
 
 	if cols, _ := rows.Columns(); len(cols) == 0 {
-		respondJson(app, w, tableDescrs)
+		respondJson(app, w, table)
 		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var fieldName string
-		var fieldType string
-		if err = rows.Scan(&fieldName, &fieldType); err != nil {
+		var field TableField
+		if err = rows.Scan(&field.Name, &field.FieldType); err != nil {
 			app.Logger.Println("could not parse table description")
 			continue
 		}
-		tableDescrs[fieldName] = fieldType
+		table.Fields = append(table.Fields, field)
 	}
 
-	respondJson(app, w, tableDescrs)
+	respondJson(app, w, table)
 }

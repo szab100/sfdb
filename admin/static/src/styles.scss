@@ -3,6 +3,7 @@
 
 /* Material icons */
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
 .mat-icon.mat-primary {
   color: #4285F4;
   margin-left: -6px;
@@ -13,30 +14,61 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,500,700');
 
 [hidden] {
-    display: none !important;
+  display: none !important;
 }
 
 html {
-    border: 0;
-    margin: 0;
-    padding: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    color: #333;
-    font-size: 1em;
-    font-family: Roboto,arial,sans-serif;
-    font-weight: 400;
-    background-color: #eee;
-    height: 100%;
+  color: #333;
+  font-size: 1em;
+  font-family: Roboto, arial, sans-serif;
+  font-weight: 400;
+  background-color: #eee;
+  height: 100%;
 }
 
 .mat-card {
-    margin: 5px;
+  margin: 5px;
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .mat-card .mat-card-header-text {
   margin: 0;
+}
+
+.mat-header-cell {
+  font-size: 1em;
+}
+
+.mat-card button {
+  width: auto;
+  display: inline-block;
+  padding-right: 15px;
+  color: #000000aa;
+}
+
+.mat-card-content {
+  margin-left: auto;
+  margin-right: auto;
+  width: 75%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mat-table {
+  width: 100%;
+}
+
+td {
+  vertical-align: middle;
 }
 
 button.action-button {
@@ -45,40 +77,41 @@ button.action-button {
 }
 
 .ui-paginator .ui-paginator-page.ui-state-active {
-    background: #4285f4;
-    border-color: #87a2d0;
+  background: #4285f4;
+  border-color: #87a2d0;
 }
 
 h1 {
-    display: block;
-    font-size: 2em;
-    margin-top: 0.67em;
-    margin-bottom: 0.67em;
-    margin-left: 0;
-    margin-right: 0;
-    font-weight: bold;
+  display: block;
+  font-size: 2em;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
 }
 
 h2 {
-    display: block;
-    font-size: 1.5em;
-    margin-top: 0.83em;
-    margin-bottom: 0.83em;
-    margin-left: 0;
-    margin-right: 0;
-    font-weight: bold;
+  display: block;
+  font-size: 1.5em;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
 }
 
 h3 {
-    display: block;
-    font-size: 1.17em;
-    margin-top: 1em;
-    margin-bottom: 1em;
-    margin-left: 0;
-    margin-right: 0;
-    font-weight: bold;
+  display: block;
+  font-size: 1.17em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
 }
 
-th, tr {
-    vertical-align: middle;
+th,
+tr {
+  vertical-align: middle;
 }

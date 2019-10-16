@@ -33,6 +33,7 @@ body {
   font-weight: 400;
   background-color: #eee;
   height: 100%;
+  line-height: normal;
 }
 
 .mat-card {
@@ -64,6 +65,15 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.snackBar {
+  display: block;
+  text-align: center;
+}
+
+.mat-snack-bar-container {
+  background: white !important;
 }
 
 .mat-table {

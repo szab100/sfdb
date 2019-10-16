@@ -9,7 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   MatButtonModule, MatCardModule, MatIconModule, MatSidenavModule,
   MatRadioModule, MatInputModule, MatTableModule, MatPaginatorModule,
-  MatSortModule, MatProgressSpinnerModule
+  MatSortModule, MatProgressSpinnerModule, MatDialogModule, MatSnackBarModule
 } from '@angular/material';
 import { HighlightModule } from 'ngx-highlightjs';
 import sql from 'highlight.js/lib/languages/sql';
@@ -23,13 +23,14 @@ import { NavbarComponent } from './header/navbar/navbar.component';
 import { SidenavComponent } from './header/sidenav/sidenav.component';
 import { ErrorComponent } from './error/error.component';
 import { ConnectionComponent } from './connection/connection.component';
-import { TablesComponent } from './tables/tables.component';
+import { TablesComponent, TableDropConfirmation } from './tables/tables.component';
 import { StatsComponent } from './stats/stats.component';
 import { DisableControlDirective } from './misc/disableFormControl.directive';
 import { DescribeTableComponent } from './tables/describe/describe.component';
 import { ViewTableComponent } from './tables/view/view.component';
 import { CreateTableComponent } from './tables/create/create.component';
 import { QueryComponent } from './query/query.component';
+import { DropTableDialogComponent } from './tables/drop/drop.component';
 
 export function hljsLanguages() {
   return [{ name: 'sql', func: sql }];
@@ -50,7 +51,9 @@ export function hljsLanguages() {
     DescribeTableComponent,
     ViewTableComponent,
     CreateTableComponent,
-    QueryComponent
+    QueryComponent,
+    DropTableDialogComponent,
+    TableDropConfirmation
   ],
   imports: [
     BrowserModule,
@@ -73,8 +76,14 @@ export function hljsLanguages() {
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDialogModule,
+    MatSnackBarModule
 
+  ],
+  entryComponents: [
+    DropTableDialogComponent,
+    TableDropConfirmation
   ],
   providers: [
     {

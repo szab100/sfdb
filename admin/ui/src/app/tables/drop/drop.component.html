@@ -1,0 +1,8 @@
+<h1 mat-dialog-title>Confirm table deletion</h1>
+<div mat-dialog-content>
+  <p>Are you sure you want to drop table '{{data.table}}'?</p>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Nope</button>
+  <button mat-button [mat-dialog-close]="'yes'" cdkFocusInitial>Yes, delete pls!</button>
+</div>

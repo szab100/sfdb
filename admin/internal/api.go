@@ -127,8 +127,12 @@ func (app *App) connectDb(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) ping(w http.ResponseWriter, r *http.Request) {
+	if app.DB == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 	if err := app.DB.Ping(); err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError, Subscription, timer, interval } from 'rxjs';
-import { retry, catchError, map, first } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { Observable, Subscription, interval } from 'rxjs';
+import { map, first } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
 
@@ -17,13 +18,15 @@ export class ApiService {
     private connectionCheckerTimer: Subscription = null;
 
     baseUrl = environment['API_ENDPOINT'];
-    httpOptions = {
+    httpOptions: Object = {
         headers: new HttpHeaders({
             'Content-Type': 'application/json'
-        })
+        }),
+        responseType: "json",
+        observe: "body"
     }
 
-    constructor(private http: HttpClient) {
+    constructor(private http: HttpClient, private router: Router) {
         // Check if we are already connected
         if (this.connected == null) {
             this.ping().pipe(first()).subscribe(() => {
@@ -51,16 +54,20 @@ export class ApiService {
     }
 
     public ping(): Observable<any> {
-        return this.http.get<any>(this.baseUrl + '/ping', this.httpOptions).pipe(map(
+        let extendedOptions: Object = { ...this.httpOptions, ...{ responseType: 'text', observe: 'response' } }
+        return this.http.get<any>(this.baseUrl + '/ping', extendedOptions).pipe(map(
             res => {
-                this.connected = true;
-                return res;
-            }), catchError(err => {
-                this.connected = false;
-                if (this.connectionCheckerTimer != null && !this.connectionCheckerTimer.closed) {
-                    this.connectionCheckerTimer.unsubscribe();
+                if (res.status == 200) {
+                    this.connected = true;
+                } else {
+                    this.connected = false;
+                    if (this.connectionCheckerTimer != null && !this.connectionCheckerTimer.closed) {
+                        this.connectionCheckerTimer.unsubscribe();
+                    }
+                    // Navigate back to connection
+                    this.router.navigateByUrl('/connection');
                 }
-                return err;
+                return res;
             })
         );
     }

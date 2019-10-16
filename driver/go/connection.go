@@ -28,9 +28,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	sfdb_pb "github.com/googlegsa/sfdb/api_go_proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 )
 
 var (
@@ -218,7 +220,7 @@ func Connect(connString string) (*Connection, error) {
 	}
 
 	// 2. establish RPC Connection
-	conn.rpcConn, err = grpc.Dial(conn.addr, grpc.WithInsecure())
+	conn.rpcConn, err = grpc.Dial(conn.addr, grpc.WithBlock(), grpc.WithTimeout(1*time.Second), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
@@ -228,4 +230,17 @@ func Connect(connString string) (*Connection, error) {
 	conn.stub = &stub
 
 	return conn, nil
+}
+
+// Ping implements driver.Pinger interface
+func (c *Connection) Ping(ctx context.Context) (err error) {
+	if c.rpcConn == nil {
+		return driver.ErrBadConn
+	}
+
+	if c.rpcConn.GetState() != connectivity.Ready && c.rpcConn.GetState() != connectivity.Idle {
+		return driver.ErrBadConn
+	}
+
+	return nil
 }

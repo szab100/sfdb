@@ -20,10 +20,11 @@ cc_binary(
     srcs = ["main.cc"],
     deps = [
         ":flags",
-        ":modules",
-        ":service_impl",
+        "//server:server",
+        "//server:grpc_sfdb_server",
+        "//server:brpc_sfdb_server",
         "//util/thread",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
@@ -76,34 +77,5 @@ cc_library(
     deps = [
         "//util/types",
         "@com_google_absl//absl/flags:flag",
-    ],
-)
-
-cc_library(
-    name = "modules",
-    srcs = ["modules.cc"],
-    hdrs = ["modules.h"],
-    deps = [
-        ":flags",
-        "//sfdb/base:db",
-        "//sfdb/base:vars",
-        "//sfdb/raft",
-        "//util/time:clock",
-        "@com_github_grpc_grpc//:grpc++",
-        "@com_google_absl//absl/flags:flag",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-cc_library(
-    name = "service_impl",
-    srcs = ["service_impl.cc"],
-    hdrs = ["service_impl.h"],
-    deps = [
-        ":api_cc_grpc",
-        ":modules",
-        "//sfdb/base:replicated_db",
-        "@com_github_glog_glog//:glog",
     ],
 )

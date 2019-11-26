@@ -24,8 +24,11 @@ package sfdb
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"strings"
+
+	api_pb "github.com/googlegsa/sfdb/api_go_proto"
 )
 
 type stmt struct {
@@ -157,11 +160,14 @@ func queryRPC(ctx context.Context, query string, conn *Connection) (driver.Rows,
 		return nil, err
 	}
 
-	if pbResp.Descriptors == nil {
-		return nil, nil
+	// TODO: Implement redirects to leader using Status
+	// Status field is optional and introduced to provide an extended
+	// reason for query failure when it is possible.
+	if pbResp.Status != nil && *pbResp.Status != api_pb.ExecSqlResponse_OK {
+		return nil, errors.New("Query failed")
 	}
 
-	rows, err := NewRows(*pbResp.Descriptors, pbResp.Rows)
+	rows, err := NewRows(pbResp.Rows, pbResp.Descriptors)
 	return rows, err
 }
 

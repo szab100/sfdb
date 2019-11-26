@@ -51,13 +51,23 @@ type rows struct {
 	message      *dynamic.Message
 }
 
-func NewRows(file_desc_set descriptor.FileDescriptorSet, row_msgs []*any.Any) (*rows, error) {
+func NewRows(row_msgs []*any.Any, file_desc_set *descriptor.FileDescriptorSet) (*rows, error) {
 	if len(row_msgs) == 0 {
-		return nil, errors.New("Empty resultset")
+		return &rows{
+			current_row:  0,
+			raw_rows:     row_msgs,
+			column_names: []string {},
+			column_types: []*ColumnType {},
+			message:      nil,
+		}, nil
+	}
+
+	if file_desc_set == nil {
+		return nil, errors.New("Parsing message without descriptor is not implemented")
 	}
 
 	var importResolver desc.ImportResolver
-	fileDescriptor, err := importResolver.CreateFileDescriptorFromSet(&file_desc_set)
+	fileDescriptor, err := importResolver.CreateFileDescriptorFromSet(file_desc_set)
 	if err != nil {
 		log.Error("Cannot read descriptor in proto response")
 		return nil, err

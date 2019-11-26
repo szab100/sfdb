@@ -19,23 +19,28 @@
  * under the License.
  *
  */
-#ifndef SFDB_FLAGS_H_
-#define SFDB_FLAGS_H_
 
-#include <string>
+#include "server/grpc_sfdb_service_impl.h"
 
-#include "absl/flags/flag.h"
-#include "util/types/integral_types.h"
+#include <memory>
+#include <vector>
 
-using std::string;
+#include "glog/logging.h"
+#include "server/grpc_modules.h"
 
-ABSL_DECLARE_FLAG(int32, port);
-ABSL_DECLARE_FLAG(string, raft_impl);
-ABSL_DECLARE_FLAG(string, raft_my_target);
-ABSL_DECLARE_FLAG(string, raft_targets);
+namespace sfdb {
 
-// Logging related flags
-ABSL_DECLARE_FLAG(int32, log_v);
-ABSL_DECLARE_FLAG(bool, log_alsologtostderr);
+using ::google::protobuf::Message;
 
-#endif // SFDB_FLAGS_H_
+GrpcSfdbServiceImpl::GrpcSfdbServiceImpl(GrpcModules *modules)
+    : modules_(modules) {}
+
+::grpc::Status GrpcSfdbServiceImpl::ExecSql(grpc::ServerContext *context,
+                                            const ExecSqlRequest *request,
+                                            ExecSqlResponse *response) {
+  VLOG(2) << "Got SQL: " << request->sql();
+  ::grpc::Status ret = modules_->db()->ExecSql(*request, response);
+  return ret;
+}
+
+}  // namespace sfdb

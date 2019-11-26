@@ -19,23 +19,32 @@
  * under the License.
  *
  */
-#ifndef SFDB_FLAGS_H_
-#define SFDB_FLAGS_H_
 
-#include <string>
+#include "server/grpc_sfdb_server.h"
 
-#include "absl/flags/flag.h"
-#include "util/types/integral_types.h"
+#include "absl/memory/memory.h"
+#include "server/grpc_modules.h"
+#include "server/grpc_sfdb_service_impl.h"
 
-using std::string;
+namespace sfdb {
 
-ABSL_DECLARE_FLAG(int32, port);
-ABSL_DECLARE_FLAG(string, raft_impl);
-ABSL_DECLARE_FLAG(string, raft_my_target);
-ABSL_DECLARE_FLAG(string, raft_targets);
+bool GrpcSfdbServer::StartAndWait(const std::string &host, int port,
+                                  const std::string &raft_targets) {
+  modules_->Init(host, port, raft_targets);
 
-// Logging related flags
-ABSL_DECLARE_FLAG(int32, log_v);
-ABSL_DECLARE_FLAG(bool, log_alsologtostderr);
+  auto server_builder = modules_->server_builder();
+  server_builder->RegisterService(service_impl_.get());
+  auto server = server_builder->BuildAndStart();
+  server->Wait();
 
-#endif // SFDB_FLAGS_H_
+  return true;
+}
+
+bool GrpcSfdbServer::Stop() {}
+
+GrpcSfdbServer::GrpcSfdbServer()
+    : modules_(absl::make_unique<GrpcModules>()),
+      service_impl_(absl::make_unique<GrpcSfdbServiceImpl>(modules_.get())) {}
+
+GrpcSfdbServer::~GrpcSfdbServer() = default;
+}  // namespace sfdb

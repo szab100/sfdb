@@ -19,28 +19,31 @@
  * under the License.
  *
  */
-#include "sfdb/raft/raft_module.h"
+
+#include "server/grpc_modules.h"
 
 #include <memory>
 
+#include "absl/flags/flag.h"
 #include "absl/memory/memory.h"
-#include "sfdb/base/db.h"
+#include "absl/strings/str_format.h"
+#include "sfdb/flags.h"
 
 namespace sfdb {
 
-using ::absl::make_unique;
-using ::util::Clock;
+GrpcModules::GrpcModules() : clock_(::util::Clock::RealClock()) {}
 
-RaftModule::~RaftModule() = default;
+void GrpcModules::Init(const std::string &host, int port,
+                       const std::string &raft_targets) {
+  server_builder_ = absl::make_unique<::grpc::ServerBuilder>();
+  auto my_target = absl::StrFormat("%s:%d", host, port);
+  server_builder_->AddListeningPort(my_target,
+                                    grpc::InsecureServerCredentials());
 
-RaftModule::RaftModule(grpc::ServerBuilder *server_builder, Clock *clock)
-    : server_builder_(server_builder), clock_(clock) {}
-
-std::unique_ptr<RaftInstance> RaftModule::NewInstance(
-    const std::string &raft_my_target, const std::string &raft_targets,
-    Db *db) {
-  return absl::make_unique<RaftInstance>(raft_my_target, raft_targets, db,
-                                         server_builder_, clock_);
+  built_in_vars_ = absl::make_unique<BuiltIns>();
+  raft_ = absl::make_unique<RaftModule>(server_builder_.get(), clock_);
+  db_ = absl::make_unique<Db>("MAIN", built_in_vars_.get());
+  replicated_db_ = raft_->NewInstance(my_target, raft_targets, db_.get());
 }
 
-} // namespace sfdb
+}  // namespace sfdb

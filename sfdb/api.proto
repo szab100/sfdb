@@ -19,10 +19,18 @@ message ExecSqlResponse {
   // Rows as dynamic messages
   repeated google.protobuf.Any rows = 2;
 
-  // Rows as text-encoded protobufs (if include_debug_strings = true in request)
-  repeated string debug_strings = 3;
-}
+  // Status of request
+  enum StatusCode {
+    OK = 0;
+    REDIRECT = 1;
+    ERROR = -1;
+  };
 
-service SfdbService {
-  rpc ExecSql(ExecSqlRequest) returns (ExecSqlResponse);
+  optional StatusCode status = 3 [default = OK];
+
+  // Redirect URL if query was done to not leader node
+  optional string redirect = 4;
+
+  // Rows as text-encoded protobufs (if include_debug_strings = true in request)
+  repeated string debug_strings = 5;
 }

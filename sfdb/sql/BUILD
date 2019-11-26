@@ -58,7 +58,7 @@ cc_test(
         ":tokenizer",
         "//util/task:status",
         "//util/task:statusor",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

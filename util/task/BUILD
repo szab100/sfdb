@@ -25,7 +25,7 @@ cc_library(
         ":codes_cpp",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/strings",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_github_grpc_grpc//:grpc++",
     ],
 )

@@ -19,23 +19,26 @@
  * under the License.
  *
  */
-#ifndef SFDB_FLAGS_H_
-#define SFDB_FLAGS_H_
+#include "server/brpc_sfdb_server_impl.h"
 
-#include <string>
+#include "absl/memory/memory.h"
+#include "brpc/server.h"
+#include "butil/at_exit.h"
+#include "server/braft_node.h"
+#include "server/brpc_sfdb_service_impl.h"
 
-#include "absl/flags/flag.h"
-#include "util/types/integral_types.h"
+namespace sfdb {
 
-using std::string;
+BrpcSfdbServerImpl::BrpcSfdbServerImpl() {}
+BrpcSfdbServerImpl::~BrpcSfdbServerImpl() = default;
 
-ABSL_DECLARE_FLAG(int32, port);
-ABSL_DECLARE_FLAG(string, raft_impl);
-ABSL_DECLARE_FLAG(string, raft_my_target);
-ABSL_DECLARE_FLAG(string, raft_targets);
+bool BrpcSfdbServerImpl::Start(const std::string &host, int port,
+                               const std::string &raft_targets,
+                               const BraftExecSqlHandler &exec_sql_handler) {
+  return true;
+}
 
-// Logging related flags
-ABSL_DECLARE_FLAG(int32, log_v);
-ABSL_DECLARE_FLAG(bool, log_alsologtostderr);
+void BrpcSfdbServerImpl::Stop() {}
 
-#endif // SFDB_FLAGS_H_
+void BrpcSfdbServerImpl::WaitTillStopped() {}
+}  // namespace sfdb

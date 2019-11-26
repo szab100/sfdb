@@ -17,6 +17,7 @@ go_library(
     importpath = "github.com/googlegsa/sfdb/driver/go",
     deps = [
         "//sfdb:api_go_proto",
+        "//server:grpc_sfdb_service_go_proto",
         "@com_github_golang_glog//:go_default_library",
         "@com_github_jhump_protoreflect//desc:go_default_library",
         "@com_github_jhump_protoreflect//dynamic:go_default_library",

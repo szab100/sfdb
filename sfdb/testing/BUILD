@@ -17,9 +17,9 @@ cc_test(
     size = "medium",
     srcs = ["big_test.cc"],
     deps = [
-        "//sfdb:modules",
-        "//sfdb:service_impl",
         "//util/net:port",
+        "//server:grpc_modules",
+        "//server:grpc_sfdb_service_impl",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
@@ -33,9 +33,9 @@ cc_test(
     size = "small",
     srcs = ["e2e_test.cc"],
     deps = [
+        "//server:grpc_modules",
+        "//server:grpc_sfdb_service_impl",
         "//sfdb:flags",
-        "//sfdb:modules",
-        "//sfdb:service_impl",
         "//util/net:port",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/strings",
@@ -55,6 +55,7 @@ go_library(
     srcs = ["loadtest.go"],
     importpath = "github.com/googlegsa/sfdb/sfdb/testing",
     deps = [
+        "//server:grpc_sfdb_service_go_proto",
         "//sfdb:api_go_proto",
         "@com_github_golang_glog//:go_default_library",
         "@org_golang_google_grpc//:go_default_library",

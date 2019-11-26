@@ -38,7 +38,10 @@ class RaftModule {
 public:
   RaftModule(grpc::ServerBuilder *server_builder, ::util::Clock *clock);
 
-  std::unique_ptr<RaftInstance> NewInstance(Db *db);
+  std::unique_ptr<RaftInstance> NewInstance(const std::string &raft_my_target,
+                                            const std::string &raft_targets,
+                                            Db *db);
+
   ~RaftModule();
 
 private:

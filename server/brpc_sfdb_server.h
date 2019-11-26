@@ -19,23 +19,37 @@
  * under the License.
  *
  */
-#ifndef SFDB_FLAGS_H_
-#define SFDB_FLAGS_H_
 
+#ifndef SERVER_BRPC_SFDB_SERVER_H_
+#define SERVER_BRPC_SFDB_SERVER_H_
+
+#include <memory>
 #include <string>
 
-#include "absl/flags/flag.h"
-#include "util/types/integral_types.h"
+#include "server/server.h"
 
-using std::string;
+namespace sfdb {
+class Db;
+class BuiltIns;
+class BrpcSfdbServerImpl;
 
-ABSL_DECLARE_FLAG(int32, port);
-ABSL_DECLARE_FLAG(string, raft_impl);
-ABSL_DECLARE_FLAG(string, raft_my_target);
-ABSL_DECLARE_FLAG(string, raft_targets);
+class BrpcSfdbServer : public SfdbServer {
+ public:
+  BrpcSfdbServer();
+  ~BrpcSfdbServer();
 
-// Logging related flags
-ABSL_DECLARE_FLAG(int32, log_v);
-ABSL_DECLARE_FLAG(bool, log_alsologtostderr);
+  bool StartAndWait(const std::string &host, int port,
+                    const std::string &raft_targets) override;
+  bool Stop() override;
+ private:
 
-#endif // SFDB_FLAGS_H_
+ private:
+  std::unique_ptr<Db> db_;
+  std::unique_ptr<BuiltIns> built_in_vars_;
+
+  std::unique_ptr<BrpcSfdbServerImpl> pimpl_;
+};
+
+}  // namespace sfdb
+
+#endif  // SERVER_BRPC_SFDB_SERVER_H_

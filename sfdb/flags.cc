@@ -32,6 +32,10 @@ ABSL_FLAG(int32, port, 27910, "Main HTTP port");
 // -----------------------------------------------------------------------------
 // RAFT mode
 // -----------------------------------------------------------------------------
+ABSL_FLAG(string, raft_impl, "raft",
+          "A raft implementation. Possible value:"
+          "\traft - built in raft implementation. GRPC will be used as RPC implementation"
+          "\tbraft - BRAFT implementation. BRPC will be used as RPC implementation");
 
 ABSL_FLAG(string, raft_my_target, "localhost:27910",
           "A SmartStub-compatible Stubby target of this binary.");

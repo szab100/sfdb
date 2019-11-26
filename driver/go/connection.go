@@ -30,7 +30,7 @@ import (
 	"strings"
 	"time"
 
-	sfdb_pb "github.com/googlegsa/sfdb/api_go_proto"
+	sfdb_pb "github.com/googlegsa/sfdb/grpc_sfdb_service_go_proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 )
@@ -172,13 +172,17 @@ func ParseConnString(c *Connection, connString string) error {
 	if len(addrs) > 2 {
 		err := errors.New("too many / symbols")
 		return err
-	} else if len(addrs) == 2 {
+	} else {
 		c.addr = addrs[0]
 		if c.addr == "" {
 			err := errors.New("invalid address")
 			return err
 		}
-		tmp = addrs[1]
+		if len(addrs) == 2 {
+			tmp = addrs[1]
+		} else {
+			tmp = ""
+		}
 	}
 
 	// dbname

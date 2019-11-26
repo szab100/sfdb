@@ -19,23 +19,24 @@
  * under the License.
  *
  */
-#ifndef SFDB_FLAGS_H_
-#define SFDB_FLAGS_H_
 
+#ifndef SERVER_COMMON_TYPES_H_
+#define SERVER_COMMON_TYPES_H_
+
+#include <functional>
 #include <string>
+#include <utility>
 
-#include "absl/flags/flag.h"
-#include "util/types/integral_types.h"
+#include "sfdb/api.pb.h"
+#include "util/task/codes.pb.h"  // ::util::error::Code
 
-using std::string;
+namespace sfdb {
+// Type to pass result back from sql query execution.
+using BraftExecSqlResult = std::pair<::util::error::Code, const std::string>;
+using BraftExecSqlHandler = std::function<BraftExecSqlResult(
+    const std::string &, ExecSqlResponse *)>;
 
-ABSL_DECLARE_FLAG(int32, port);
-ABSL_DECLARE_FLAG(string, raft_impl);
-ABSL_DECLARE_FLAG(string, raft_my_target);
-ABSL_DECLARE_FLAG(string, raft_targets);
+using BraftRedirectHandler = std::function<void(ExecSqlResponse *)>;
+}  // namespace sfdb
 
-// Logging related flags
-ABSL_DECLARE_FLAG(int32, log_v);
-ABSL_DECLARE_FLAG(bool, log_alsologtostderr);
-
-#endif // SFDB_FLAGS_H_
+#endif  // SERVER_COMMON_TYPES_H_

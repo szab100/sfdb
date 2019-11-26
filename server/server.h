@@ -19,23 +19,19 @@
  * under the License.
  *
  */
-#ifndef SFDB_FLAGS_H_
-#define SFDB_FLAGS_H_
+
+#ifndef SERVER_SERVER_H_
+#define SERVER_SERVER_H_
 
 #include <string>
 
-#include "absl/flags/flag.h"
-#include "util/types/integral_types.h"
+namespace sfdb {
+class SfdbServer {
+ public:
+  virtual bool StartAndWait(const std::string &host, int port,
+                            const std::string &cluster_nodes) = 0;
+  virtual bool Stop() = 0;
+};
+}  // namespace sfdb
 
-using std::string;
-
-ABSL_DECLARE_FLAG(int32, port);
-ABSL_DECLARE_FLAG(string, raft_impl);
-ABSL_DECLARE_FLAG(string, raft_my_target);
-ABSL_DECLARE_FLAG(string, raft_targets);
-
-// Logging related flags
-ABSL_DECLARE_FLAG(int32, log_v);
-ABSL_DECLARE_FLAG(bool, log_alsologtostderr);
-
-#endif // SFDB_FLAGS_H_
+#endif  // SERVER_SERVER_H_

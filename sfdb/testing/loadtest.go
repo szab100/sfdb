@@ -11,6 +11,7 @@ import (
 	log "github.com/golang/glog"
 
 	api "github.com/googlegsa/sfdb/api_go_proto"
+	api_service "github.com/googlegsa/sfdb/grpc_sfdb_service_go_proto"
 	"google.golang.org/grpc"
 )
 
@@ -21,7 +22,7 @@ var (
 	heartbeatQPS = flag.Int("heartbeat_qps", -1, "Number of heartbeats per second")
 )
 
-func execSql(stub api.SfdbServiceClient, sql string, done chan error) {
+func execSql(stub api_service.SfdbServiceClient, sql string, done chan error) {
 	req := &api.ExecSqlRequest{Sql: &sql}
 	_, err := stub.ExecSql(context.Background(), req)
 	if err != nil {
@@ -32,7 +33,7 @@ func execSql(stub api.SfdbServiceClient, sql string, done chan error) {
 	}
 }
 
-func execSqlOrDie(stub api.SfdbServiceClient, sql string, choke chan interface{}) {
+func execSqlOrDie(stub api_service.SfdbServiceClient, sql string, choke chan interface{}) {
 	done := make(chan error, 1)
 	execSql(stub, sql, done)
 	if <-done != nil {
@@ -68,7 +69,7 @@ func streamHeartbeats(sqls chan string) {
 	}
 }
 
-func execSqls(stub api.SfdbServiceClient, sqls chan string) {
+func execSqls(stub api_service.SfdbServiceClient, sqls chan string) {
 	lastCheckpoint := time.Now()
 	rpcsSinceLastCheckpoint := 0
 
@@ -109,7 +110,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer conn.Close()
-	stub := api.NewSfdbServiceClient(conn)
+	stub := api_service.NewSfdbServiceClient(conn)
 
 	log.Info("Initializing the table")
 	execSql(stub, "DROP TABLE LoadTest;", nil) // ignore errors

@@ -21,14 +21,15 @@
  */
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
 #include "absl/time/time.h"
 #include "glog/logging.h"
-#include "grpcpp/grpcpp.h"
 #include "sfdb/flags.h"
-#include "sfdb/modules.h"
-#include "sfdb/service_impl.h"
+
+#include "server/grpc_sfdb_server.h"
+#include "server/brpc_sfdb_server.h"
 
 using ::absl::GetFlag;
 using ::absl::Seconds;
@@ -46,17 +47,22 @@ int main(int argc, char **argv) {
   FLAGS_v = GetFlag(FLAGS_log_v);
   FLAGS_alsologtostderr = GetFlag(FLAGS_log_alsologtostderr);
 
-  ::sfdb::Modules modules;
-  modules.Init();
-  auto server_builder = modules.server_builder();
+  auto raft_impl = GetFlag(FLAGS_raft_impl);
+  std::unique_ptr<sfdb::SfdbServer> server;
+  if (raft_impl == "raft") {
+    server = absl::make_unique<sfdb::GrpcSfdbServer>();
+  } else if (raft_impl == "braft") {
+    server = absl::make_unique<sfdb::BrpcSfdbServer>();
+  } else {
+    LOG(FATAL) << "Unknown RAFT impementation: " << raft_impl;
+  }
 
-  ::sfdb::SfdbServiceImpl sfdb_service(&modules);
-  server_builder->RegisterService(&sfdb_service);
+  std::vector<std::string> address_parts = absl::StrSplit(GetFlag(FLAGS_raft_my_target), ":");
+  CHECK(address_parts.size() == 2);
+  int port;
+  CHECK(absl::SimpleAtoi(address_parts[1], &port));
 
-  // start server
-  auto server = server_builder->BuildAndStart();
-  LOG(INFO) << "SFDB server is ready on port " << GetFlag(FLAGS_port);
-  server->Wait();
+  server->StartAndWait(address_parts[0], port, GetFlag(FLAGS_raft_targets));
 
   return 0;
 }

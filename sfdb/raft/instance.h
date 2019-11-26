@@ -37,8 +37,9 @@ namespace sfdb {
 // Thread-safe.
 class RaftInstance : public ReplicatedDb {
 public:
-  RaftInstance(Db *db, grpc::ServerBuilder *server_builder,
-               ::util::Clock *clock);
+  RaftInstance(const std::string &raft_my_target,
+               const std::string &raft_targets, Db *db,
+               grpc::ServerBuilder *server_builder, ::util::Clock *clock);
   ~RaftInstance();
 
   RaftInstance(const RaftInstance &) = delete;

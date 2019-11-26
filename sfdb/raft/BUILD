@@ -53,7 +53,7 @@ cc_library(
         "//util/task:status",
         "//util/task:statusor",
         "//util/time:clock",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/memory",

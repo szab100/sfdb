@@ -4,16 +4,18 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 # Protobuf
-git_repository(
+# NOTE: a particular version is needed because of BRAFT/BRPC
+http_archive(
     name = "com_google_protobuf",
-    remote = "https://github.com/protocolbuffers/protobuf",
-    commit = "6a59a2ad1f61d9696092f79b6d74368b4d7970a3",
-    shallow_since = "1562856725 -0700"
+    strip_prefix = "protobuf-3.6.1.3",
+    sha256 = "9510dd2afc29e7245e9e884336f848c8a6600a14ae726adb6befdb4f786f0be2",
+    type = "zip",
+    url = "https://github.com/protocolbuffers/protobuf/archive/v3.6.1.3.zip",
 )
 
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+#load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
-protobuf_deps()
+#protobuf_deps()
 
 # gRPC
 git_repository(
@@ -33,7 +35,7 @@ grpc_deps()
 
 # Various Git Repositories
 git_repository(
-    name = "com_github_glog_glog",
+    name = "com_github_google_glog",
     remote = "https://github.com/google/glog.git",
     commit = "3106945d8d3322e5cbd5658d482c9ffed2d892c0",
     #shallow_since = "1516118775 +0100"
@@ -139,3 +141,23 @@ go_repository(
     sum = "h1:gnP5JzjVOuiZD07fKKToCAOjS0yOpj/qPETTXCCS6hw=",
     version = "v1.7.3",
 )
+
+git_repository(
+    name = "com_github_brpc_braft",
+    remote = "https://github.com/brpc/braft",
+    commit = "d0277bf2aea66908d1fd7376d191bd098371966e"
+)
+
+http_archive(
+    name = "com_github_brpc_brpc",
+    strip_prefix = "incubator-brpc-2b748f82c3447196c8ce372733e5af8f8d76cef5",
+    url = "https://github.com/apache/incubator-brpc/archive/2b748f82c3447196c8ce372733e5af8f8d76cef5.tar.gz",
+)
+
+http_archive(
+    name = "com_github_google_leveldb",
+    build_file = "@com_github_brpc_braft//:leveldb.BUILD",
+    strip_prefix = "leveldb-a53934a3ae1244679f812d998a4f16f2c7f309a6",
+    url = "https://github.com/google/leveldb/archive/a53934a3ae1244679f812d998a4f16f2c7f309a6.tar.gz"
+)
+

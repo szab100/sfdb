@@ -63,7 +63,7 @@ cc_test(
         "//sfdb/testing:data",
         "//util/proto",
         "//util/task:status",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",

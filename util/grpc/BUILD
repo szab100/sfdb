@@ -31,7 +31,7 @@ cc_library(
     ],
     deps = [
         ":async_wrappers",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_github_grpc_grpc//:grpc++",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/time",

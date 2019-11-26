@@ -46,7 +46,9 @@ bool ParseTextProto(absl::string_view asciipb, ParserConfig config,
                     SourceLocation loc, Message *msg, string *errors) {
   TextFormat::Parser parser;
   parser.AllowPartialMessage(config.allow_partial_messages);
-  parser.AllowUnknownExtension(config.allow_unknown_extensions);
+  // TODO: check if still needed, disabling now due to braft is locked
+  // protobuf v3.6.1.3, this is introduced in v3.8
+  //parser.AllowUnknownExtension(config.allow_unknown_extensions);
   DefaultErrorCollector error_collector;
   parser.RecordErrorsTo(&error_collector);
 

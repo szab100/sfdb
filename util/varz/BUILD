@@ -14,7 +14,7 @@ cc_library(
         "varz.h"
     ],
     deps = [
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:variant",
         "@com_google_absl//absl/flags:flag",

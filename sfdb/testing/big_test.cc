@@ -27,8 +27,8 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "sfdb/flags.h"
-#include "sfdb/modules.h"
-#include "sfdb/service_impl.h"
+#include "server/grpc_modules.h"
+#include "server/grpc_sfdb_service_impl.h"
 #include "util/net/port.h"
 #include "gtest/gtest.h"
 
@@ -49,9 +49,10 @@ protected:
 
   void SetUp() override {
     SetFlags();
-    modules_.reset(new Modules);
-    modules_->Init();
-    service_.reset(new SfdbServiceImpl(modules_.get()));
+    modules_.reset(new GrpcModules);
+    auto port = PickUpFreeLocalPort();
+    modules_->Init("0.0.0.0", port, StrFormat("0.0.0.0:%d", port));
+    service_.reset(new GrpcSfdbServiceImpl(modules_.get()));
     server_ = modules_->server_builder()->BuildAndStart();
   }
 
@@ -76,7 +77,7 @@ protected:
       rows_.push_back(response.debug_strings(i));
   }
 
-  std::unique_ptr<Modules> modules_;
+  std::unique_ptr<GrpcModules> modules_;
   std::unique_ptr<SfdbService::Service> service_;
   std::vector<std::string> rows_;
   std::unique_ptr<::grpc::Server> server_;

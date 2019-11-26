@@ -23,7 +23,7 @@ cc_library(
     deps = [
         ":vars",
         "//sfdb/proto:pool",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
@@ -40,7 +40,7 @@ cc_library(
         "//sfdb/proto:pool",
         "//util/task:status",
         "//util/task:statusor",
-        "@com_github_glog_glog//:glog",
+        "@com_github_google_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
     ],

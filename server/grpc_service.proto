@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package sfdb;
+
+option cc_generic_services = false;
+
+import "sfdb/api.proto";
+
+service SfdbService {
+  rpc ExecSql(ExecSqlRequest) returns (ExecSqlResponse);
+}

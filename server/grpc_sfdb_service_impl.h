@@ -19,39 +19,36 @@
  * under the License.
  *
  */
-#ifndef SFDB_SERVICE_IMPL_H_
-#define SFDB_SERVICE_IMPL_H_
 
-#include "sfdb/api.grpc.pb.h"
+#ifndef SERVER_GRPC_SFDB_SERVICE_IMPL_H_
+#define SERVER_GRPC_SFDB_SERVICE_IMPL_H_
+
+#include "server/grpc_service.grpc.pb.h"
 #include "sfdb/api.pb.h"
-#include "sfdb/base/replicated_db.h"
-#include "sfdb/modules.h"
 
 namespace sfdb {
-
+class GrpcModules;
 // Implements the gRPC service defined in api.proto.
 //
 // Thread-safe.
-class SfdbServiceImpl : public SfdbService::Service {
-public:
-  explicit SfdbServiceImpl(Modules *modules);
+class GrpcSfdbServiceImpl : public SfdbService::Service {
+ public:
+  explicit GrpcSfdbServiceImpl(GrpcModules *modules);
 
-  ~SfdbServiceImpl() = default;
-  SfdbServiceImpl(const SfdbServiceImpl &) = delete;
-  SfdbServiceImpl(const SfdbServiceImpl &&) = delete;
-  SfdbServiceImpl &operator=(const SfdbServiceImpl &) = delete;
-  SfdbServiceImpl &operator=(const SfdbServiceImpl &&) = delete;
+  ~GrpcSfdbServiceImpl() = default;
+  GrpcSfdbServiceImpl(const GrpcSfdbServiceImpl &) = delete;
+  GrpcSfdbServiceImpl(const GrpcSfdbServiceImpl &&) = delete;
+  GrpcSfdbServiceImpl &operator=(const GrpcSfdbServiceImpl &) = delete;
+  GrpcSfdbServiceImpl &operator=(const GrpcSfdbServiceImpl &&) = delete;
 
   ::grpc::Status ExecSql(grpc::ServerContext *context,
                          const ExecSqlRequest *request,
                          ExecSqlResponse *response) override;
 
-private:
-  Modules *modules_;
-
-  ReplicatedDb *db() { return modules_->db(); }
+ private:
+  GrpcModules *const modules_;
 };
 
-} // namespace sfdb
+}  // namespace sfdb
 
-#endif // SFDB_SERVICE_IMPL_H_
+#endif  // SERVER_GRPC_SFDB_SERVICE_IMPL_H_

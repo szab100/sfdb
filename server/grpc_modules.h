@@ -19,8 +19,9 @@
  * under the License.
  *
  */
-#ifndef SFDB_MODULES_H_
-#define SFDB_MODULES_H_
+
+#ifndef SERVER_GRPC_MODULES_H_
+#define SERVER_GRPC_MODULES_H_
 
 #include <memory>
 
@@ -36,26 +37,22 @@ namespace sfdb {
 // Server-wide singletons.
 //
 // Thread-safe.
-class Modules {
-public:
-  Modules() : clock_(nullptr){};
-  virtual ~Modules() = default;
+class GrpcModules {
+ public:
+  GrpcModules();
+  virtual ~GrpcModules() = default;
 
-  Modules(const Modules &) = delete;
-  Modules &operator=(const Modules &) = delete;
+  GrpcModules(const GrpcModules &) = delete;
+  GrpcModules &operator=(const GrpcModules &) = delete;
+
+  ::grpc::ServerBuilder *server_builder() { return server_builder_.get(); }
+  ReplicatedDb *db() { return replicated_db_.get(); }
 
   // Call once at server start-up time.
-  virtual void Init();
+  void Init(const std::string &host, int port, const std::string &raft_targets);
 
-  // Getters.
-  virtual ::util::Clock *clock() { return clock_; }
-  ::grpc::ServerBuilder *server_builder() { return server_builder_.get(); }
-  BuiltIns *built_in_vars() { return built_in_vars_.get(); }
-  ReplicatedDb *db() { return replicated_db_.get(); }
-  Db *local_db() { return db_.get(); } // for unit tests
-
-protected:
-  ::util::Clock *clock_;
+ protected:
+  ::util::Clock *const clock_;
   std::unique_ptr<::grpc::ServerBuilder> server_builder_;
   std::unique_ptr<BuiltIns> built_in_vars_;
   std::unique_ptr<RaftModule> raft_;
@@ -63,6 +60,6 @@ protected:
   std::unique_ptr<ReplicatedDb> replicated_db_;
 };
 
-} // namespace sfdb
+}  // namespace sfdb
 
-#endif // SFDB_MODULES_H_
+#endif  // SERVER_GRPC_MODULES_H_

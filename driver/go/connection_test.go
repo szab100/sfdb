@@ -65,6 +65,15 @@ func TestParseConnString(t *testing.T) {
 	assertEqual(t, conn.params.includeDebugStrings, false)
 }
 
+func TestParseConnStringAddressPortOnly(t *testing.T) {
+	conn := newConnection()
+
+	connString := "localhost:27910"
+	err := ParseConnString(conn, connString)
+	assertEqual(t, nil, err)
+	assertEqual(t, "localhost:27910", conn.addr)
+}
+
 func TestParseConnStringWrongCreds(t *testing.T) {
 	conn := newConnection()
 

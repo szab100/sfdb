@@ -19,31 +19,23 @@
  * under the License.
  *
  */
-#include "sfdb/modules.h"
 
-#include <memory>
+#include "server/brpc_sfdb_service_impl.h"
 
-#include "absl/flags/flag.h"
-#include "absl/memory/memory.h"
-#include "absl/strings/str_format.h"
-#include "sfdb/flags.h"
+#include "glog/logging.h"
+#include "server/braft_node.h"
 
 namespace sfdb {
+BrpcSfdbServiceImpl::BrpcSfdbServiceImpl(BraftNode* node) : node_(node) {}
 
-using ::absl::GetFlag;
+BrpcSfdbServiceImpl::~BrpcSfdbServiceImpl() = default;
 
-void Modules::Init() {
-  clock_ = ::util::Clock::RealClock();
-
-  server_builder_ = absl::make_unique<::grpc::ServerBuilder>();
-  server_builder_->AddListeningPort(
-      absl::StrFormat("0.0.0.0:%d", GetFlag(FLAGS_port)),
-      grpc::InsecureServerCredentials());
-
-  built_in_vars_ = absl::make_unique<BuiltIns>();
-  raft_ = absl::make_unique<RaftModule>(server_builder_.get(), clock_);
-  db_ = absl::make_unique<Db>("MAIN", built_in_vars());
-  replicated_db_ = raft_->NewInstance(db_.get());
+void BrpcSfdbServiceImpl::ExecSql(::google::protobuf::RpcController* controller,
+                                  const ::sfdb::ExecSqlRequest* request,
+                                  ::sfdb::ExecSqlResponse* response,
+                                  ::google::protobuf::Closure* done) {
+  CHECK(node_);
+  node_->ExecSql(request, response, done);
 }
 
-} // namespace sfdb
+}  // namespace sfdb

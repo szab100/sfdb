@@ -42,6 +42,7 @@ using ::absl::GetFlag;
 using ::absl::make_unique;
 using ::absl::SkipEmpty;
 using ::absl::string_view;
+using ::absl::StrCat;
 using ::absl::StrSplit;
 using ::google::protobuf::Message;
 using ::util::Clock;
@@ -50,12 +51,22 @@ using ::util::OkStatus;
 using ::util::Status;
 using ::util::StatusOr;
 
-RaftInstance::RaftInstance(Db *db, grpc::ServerBuilder *server_builder,
+RaftInstance::RaftInstance(const std::string &raft_my_target,
+                           const std::string &raft_targets, Db *db,
+                           grpc::ServerBuilder *server_builder,
                            ::util::Clock *clock)
     : server_builder_(server_builder), db_(db), clock_(clock) {
   ::raft::Options options;
-  options.my_target = GetFlag(FLAGS_raft_my_target);
-  options.targets = StrSplit(GetFlag(FLAGS_raft_targets), ",", SkipEmpty());
+  options.my_target = raft_my_target;
+
+  // Parse targets here and check their format
+  std::vector<std::string> targets = StrSplit(raft_targets, ",", SkipEmpty());
+  for (auto &target : targets) {
+    std::vector<std::string> target_parts = StrSplit(target, ":");
+    CHECK(target_parts.size() >= 2);
+    options.targets.push_back(StrCat(target_parts[0], ":", target_parts[1]));
+  }
+
   options.server_builder = server_builder;
   options.on_append = [this](string_view msg, void *arg) {
     return OnAppend(msg, arg);

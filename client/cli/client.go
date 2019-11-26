@@ -23,7 +23,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -35,10 +34,13 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"reflect"
+
+	"database/sql"
+
+	_ "github.com/googlegsa/sfdb/driver/go"
 
 	log "github.com/golang/glog"
-	api "github.com/googlegsa/sfdb/api_go_proto"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -86,140 +88,170 @@ func isDigit(v string) bool {
 	return err == nil
 }
 
-// queryResult struct contains parsed result from SFDB query
-type queryResult struct {
-	// Structured SQL query results, instead of string,
-	// e.g.: -> {row_index: ["val1", "val2", "val3"..]
-	Data *map[int][]string
-	// Max length of row value per column,
-	// will be used for padding when we draw table.
-	MaxLen []int
-}
-
-func (result *queryResult) drawTable() {
-	// iterate over data, padding with 0x20 (space)
-	rowsToPrint := []string{}
-	for _, rowVals := range *result.Data {
-		row := ""
-		for i, rowVal := range rowVals {
-			padding := 0
-			if !isDigit(rowVal) {
-				// append 2 bytes of 0x20 due to quotes
-				padding += 2
-			}
-
-			// trim long row values longer than 19 chars
-			if len(rowVal) > 19 {
-				rowVal = rowVal[:19] + "..."
-			}
-
-			if diff := result.MaxLen[i] - len(rowVal) + padding; diff > 0 {
-				rowVal += strings.Repeat("\x20", diff)
-			}
-			row += "\x20" + rowVal + "\x20|"
+func value2str(ct sql.ColumnType, val interface{}) string {
+	if ct.ScanType().ConvertibleTo(reflect.TypeOf(int64(0))) || ct.ScanType().ConvertibleTo(reflect.TypeOf(uint64(0))) {
+		if typed_val, ok := val.(int64); ok {
+			return fmt.Sprintf("%d", typed_val)
 		}
-		rowsToPrint = append(rowsToPrint, row)
-	}
-
-	// determine the absolute max length of the row
-	absMaxlen := getMaxStrLen(rowsToPrint)
-
-	// print header
-	fmt.Printf("\n+%s+\n", strings.Repeat("-", absMaxlen-1))
-
-	// print rows
-	for _, row := range rowsToPrint {
-		fmt.Printf("|%s\n", row)
-	}
-
-	// print footer
-	fmt.Printf("+%s+\n", strings.Repeat("-", absMaxlen-1))
-}
-
-// Given a slice of strings where each string is an query result,
-// delimited with "_{1,2..}:", we can split into the structured data
-// like queryResult struct and also define here the maximum length
-// per each column values in order to print a padded table.
-func splitRowPerColumn(rows []string) *queryResult {
-	// 1. Find column delimiters
-	// TODO: Can not parse strings with /_/d:/ pattern.
-	colDelims := colSplitRgx.FindAllString(rows[0], -1)
-
-	// 2. Compile regexps to find Column and Value from row string
-	colDelimsRgxp := []*regexp.Regexp{}
-	for _, colDelim := range colDelims {
-		colSplitRgxp := regexp.MustCompile(fmt.Sprintf(`(%s\W?\w+\W?)`, colDelim))
-		colDelimsRgxp = append(colDelimsRgxp, colSplitRgxp)
-	}
-
-	// 3. Fetch Column and Value via regexp per row into map
-	dict := make(map[int]int)
-	table := make(map[int][]string)
-
-	for i, row := range rows {
-		var vals []string
-
-		for j, colSplitRgxp := range colDelimsRgxp {
-			// Get the value per column from a row string:
-			// example, "_1: 1234 _2: 1337" -> "_1: 1234"
-			text := colSplitRgxp.FindString(row)
-			// Now get only the value without "_d:\s" prefix:
-			// example, "_1: 1234" -> "1234"
-			text = strings.Replace(text, string(colDelims[j]), "", -1)
-			text_ := sanitizeStr(text)
-
-			vals = append(vals, text_)
-
-			if _, ok := dict[j]; ok {
-				dict[j] = Max(dict[j], len(text))
+	} else if ct.ScanType().ConvertibleTo(reflect.TypeOf(bool(false))) {
+		if typed_val, ok := val.(bool); ok {
+			if typed_val {
+				return "true"
 			} else {
-				dict[j] = len(text)
+				return "false"
 			}
 		}
-
-		table[i] = vals
+	} else if ct.ScanType().ConvertibleTo(reflect.TypeOf(string(""))) {
+		if typed_val, ok := val.(string); ok {
+			return typed_val
+		}
 	}
 
-	// 4. Dict to slice of max length per column
-	maxLenPerColumn := []int{}
-	for _, lv := range dict {
-		maxLenPerColumn = append(maxLenPerColumn, lv)
+	return "<invalid value>"
+}
+
+func IMin(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func IMax(x, y int) int {
+	if x > y {
+		return x
+	}
+	return y
+}
+
+func drawTable(rows *sql.Rows) {
+	columns, err := rows.Columns()
+	if err != nil {
+		fmt.Print("Error: no columns!\n")
+		return
 	}
 
-	result := queryResult{
-		Data:   &table,
-		MaxLen: maxLenPerColumn,
+	column_types, err := rows.ColumnTypes()
+	if err != nil {
+		fmt.Print("Error: no columns!\n")
+		return
 	}
 
-	return &result
+	const column_max_width = 20
+	var num_columns = len(columns)
+
+	if num_columns == 0 {
+		fmt.Print("<Empty results>\n")
+		return
+	}
+
+	// Calculate actual column widths based on column names
+	col_widths := make([]int, num_columns)
+	for i, column := range columns {
+		col_widths[i] = IMin(column_max_width, len(column))
+	}
+
+	// Extract text from rows and recalculate column widths
+	var row_str_vals [][]string
+	for rows.Next() {
+		row_contents := make([]interface{}, num_columns)
+		row_contents_ptr := make([]interface{}, num_columns)
+
+		for i, _ := range row_contents_ptr {
+			row_contents_ptr[i] = &row_contents[i]
+		}
+
+		if err := rows.Scan(row_contents_ptr...); err != nil {
+			// TODO: return with error or type some error in table
+			continue
+		}
+
+		// Crete text representation of row columns.
+		// Make columns to be of length 20, add special symbols
+		// to draw table
+		str_vals := make([]string, num_columns)
+		for i, _ := range str_vals {
+			str_vals[i] = value2str(*column_types[i], row_contents[i])
+			col_widths[i] = IMin(column_max_width, IMax(col_widths[i], len(str_vals[i])))
+		}
+		row_str_vals = append(row_str_vals, str_vals)
+	}
+
+	var table_horizontal_edge string
+	var heading string
+
+	for i, str_val := range columns {
+		max_text_len := col_widths[i]
+		val_len := len(str_val)
+
+		if val_len > max_text_len {
+			str_val = " " + str_val[:(max_text_len - 3)] + "... "
+		} else {
+			str_val = fmt.Sprintf(" %s%s ", str_val, strings.Repeat("\x20", max_text_len - val_len));
+		}
+
+		table_horizontal_edge += "+" + strings.Repeat("-", max_text_len + 2)
+		heading += "|" + str_val
+
+		if (i == (num_columns - 1)) {
+			table_horizontal_edge += "+"
+			heading += "|"
+		}
+	}
+
+	var body string
+
+	for _, str_vals := range row_str_vals {
+		// Crete text representation of row columns.
+		// Make columns to be of length 20, add special symbols
+		// to draw table
+		var row string
+		for i, str_val := range str_vals {
+			max_text_len := col_widths[i]
+			val_len := len(str_val)
+
+			if val_len > max_text_len {
+				str_val = " " + str_val[:(max_text_len - 3)] + "... "
+			} else {
+				str_val = fmt.Sprintf(" %s%s ", str_val, strings.Repeat("\x20", max_text_len - val_len));
+			}
+
+			row += "|" + str_val
+			if (i == (num_columns - 1)) {
+				row += "|"
+			}
+		}
+		if len(body) > 0 {
+			body += "\n"
+		}
+		body += row
+	}
+
+	fmt.Printf("\n%s\n", table_horizontal_edge)
+	fmt.Print(heading)
+	fmt.Printf("\n%s\n", table_horizontal_edge)
+	fmt.Print(body)
+	fmt.Printf("\n%s\n", table_horizontal_edge)
 }
 
 /* SFDB client */
 
 type sfdbClient struct {
-	stub api.SfdbServiceClient
+	db *sql.DB
 }
 
 // Creates a protobuf and sends RPC request to SFDB target.
 func (c *sfdbClient) execSQL(sql string) error {
 	// include debug strings in RPC response
-	includeDebugStrings := true
-
-	protoreq := api.ExecSqlRequest{
-		Sql:                 &sql,
-		IncludeDebugStrings: &includeDebugStrings,
-	}
-
-	protoresp, err := c.stub.ExecSql(context.Background(), &protoreq)
+	rows, err := c.db.Query(sql)
 	if err != nil {
 		return err
 	}
 
-	// TODO: refactor client to use our Go driver when it becomes 100% ready
-	if len(protoresp.Rows) > 0 {
-		pResult := splitRowPerColumn(protoresp.DebugStrings)
-		pResult.drawTable()
-	}
+	defer rows.Close()
+
+	drawTable(rows)
+
 	return nil
 }
 
@@ -235,7 +267,7 @@ func (c *sfdbClient) execFromStdin() {
 			if err == io.EOF {
 				break
 			}
-			log.Error(err)
+			fmt.Printf("Failed to read stdin: %s\n", err.Error())
 		}
 
 		cmd_ := sanitizeStr(cmd)
@@ -251,7 +283,7 @@ func (c *sfdbClient) execFromStdin() {
 		default:
 			err := c.execSQL(cmd_)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Printf("DB returned error: %s\n", err.Error())
 			}
 		}
 	}
@@ -301,7 +333,7 @@ func (c *sfdbClient) execFromFile() {
 				fmt.Println("Too long")
 			case e := <-chanErr:
 				if e != nil {
-					fmt.Println(e)
+					fmt.Printf("DB returned error: %s", e.Error())
 				}
 			}
 		}
@@ -313,7 +345,7 @@ func (c *sfdbClient) execFromFile() {
 			}
 			err = c.execSQL(line_)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Printf("DB returned error: %s", err.Error())
 			}
 		}
 	}
@@ -323,14 +355,17 @@ func main() {
 	flag.Parse()
 
 	// 1. Init the connection to SFDB target
-	log.Info("Establishing RPC connection for ", *sfdbTarget)
+	// log.Info("Establishing RPC connection for ", *sfdbTarget)
+	fmt.Printf("Establishing RPC connection for %s\n", *sfdbTarget);
 	var err error
-	conn, err := grpc.Dial(*sfdbTarget, grpc.WithInsecure())
+
+	db, err := sql.Open("sfdb", *sfdbTarget)
+
 	if err != nil {
-		log.Error(err)
+		fmt.Printf("Failed to connect: %s\n", err.Error())
 		os.Exit(1)
 	}
-	defer conn.Close()
+	defer db.Close()
 
 	// 1.1 Handle SIGINT
 	sigint_ch := make(chan os.Signal)
@@ -338,14 +373,11 @@ func main() {
 	go func() {
 		<-sigint_ch
 		fmt.Println("Closing RPC gracefully..")
-		conn.Close()
+		db.Close()
 		os.Exit(0)
 	}()
 
-	// 2. Create the RPC stub
-	log.Info("Creating RPC client..")
-	stub := api.NewSfdbServiceClient(conn)
-	client := &sfdbClient{stub}
+	client := &sfdbClient{db}
 
 	welcome()
 

@@ -19,24 +19,46 @@
  * under the License.
  *
  */
-#include <memory>
-#include <vector>
 
-#include "glog/logging.h"
-#include "sfdb/service_impl.h"
+#ifndef SERVER_BRPC_SFDB_SERVER_IMPL_H_
+#define SERVER_BRPC_SFDB_SERVER_IMPL_H_
+
+#include <memory>
+#include <string>
+
+#include "server/common_types.h"
+
+namespace brpc {
+class Server;
+};
+
+namespace butil {
+class AtExitManager;
+}
 
 namespace sfdb {
 
-using ::google::protobuf::Message;
+class BraftNode;
+class BrpcSfdbServiceImpl;
 
-SfdbServiceImpl::SfdbServiceImpl(Modules *modules) : modules_(modules) {}
+class BrpcSfdbServerImpl {
+ public:
+  BrpcSfdbServerImpl();
+  ~BrpcSfdbServerImpl();
 
-::grpc::Status SfdbServiceImpl::ExecSql(grpc::ServerContext *context,
-                                        const ExecSqlRequest *request,
-                                        ExecSqlResponse *response) {
-  VLOG(2) << "Got SQL: " << request->sql();
-  ::grpc::Status ret = db()->ExecSql(*request, response);
-  return ret;
-}
+  bool Start(const std::string &host, int port, const std::string &raft_targets,
+             const BraftExecSqlHandler &exec_sql_handler);
+  void Stop();
+  void WaitTillStopped();
 
-} // namespace sfdb
+ private:
+  std::unique_ptr<BraftNode> node_;
+  std::unique_ptr<BrpcSfdbServiceImpl> service_impl_;
+
+  std::unique_ptr<brpc::Server> server;
+  std::unique_ptr<butil::AtExitManager> at_exit_wrapper_;
+};
+
+}  // namespace sfdb
+
+#endif  // SERVER_BRPC_SFDB_SERVER_IMPL_H_

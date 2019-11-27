@@ -62,7 +62,6 @@ class BraftNode {
   void FillRedirectResponse(ExecSqlResponse *response) const;
 
  private:
-  BraftNodeOptions options_;
   BraftExecSqlHandler exec_sql_handler_;
   std::unique_ptr<BraftStateMachineImpl> state_machine_;
   std::unique_ptr<::braft::Node> node_;

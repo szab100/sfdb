@@ -40,6 +40,9 @@ for port in "${PORTS[@]}"; do
 done
 TARGETS=${TARGETS:1}
 
+# Clean-up cache dir, until snapshot feature is fully implemented
+rm -rf tmp/
+
 for port in "${PORTS[@]}"; do
   $CMD --port=$port --raft_my_target=127.0.0.1:$port --raft_targets=$TARGETS --raft_impl=braft&
 done

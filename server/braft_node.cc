@@ -66,13 +66,13 @@ bool BraftNode::Start(const BraftNodeOptions &options,
   node_options.fsm = state_machine.get();
   node_options.node_owns_fsm = false;
   node_options.snapshot_interval_s = 0;
-  std::string prefix = "local://tmp/" + std::to_string(options_.port);
+  std::string prefix = "local://tmp/" + std::to_string(options.port);
   node_options.log_uri = prefix + "/log";
   node_options.raft_meta_uri = prefix + "/raft_meta";
   node_options.snapshot_uri = prefix + "/snapshot";
   node_options.disable_cli = false;
 
-  auto node = absl::make_unique<::braft::Node>(options_.group_name,
+  auto node = absl::make_unique<::braft::Node>(options.group_name,
                                                ::braft::PeerId(ep));
 
   if (node->init(node_options) != 0) {

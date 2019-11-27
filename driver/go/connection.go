@@ -218,7 +218,6 @@ func ConnectToService(address string, timeout time.Duration) (*grpc.ClientConn, 
 	}
 
 	stub := sfdb_pb.NewSfdbServiceClient(rpcConn)
-
 	return rpcConn, &stub, nil
 }
 
@@ -236,9 +235,9 @@ func Connect(connString string) (*Connection, error) {
 	}
 
 	// 2. establish RPC Connection
-	conn.rpcConn, conn.stub , err = ConnectToService(conn.addr, 1*time.Second)
+	conn.rpcConn, conn.stub, err = ConnectToService(conn.addr, 1*time.Second)
 
-	return conn, nil
+	return conn, err
 }
 
 // Ping implements driver.Pinger interface

@@ -36,12 +36,12 @@ CMD="$BINARY"
 declare -a PORTS=(27910 27911 27912)
 
 for port in "${PORTS[@]}"; do
-  TARGETS="$TARGETS,localhost:$port"
+  TARGETS="$TARGETS,127.0.0.1:$port:0"
 done
 TARGETS=${TARGETS:1}
 
 for port in "${PORTS[@]}"; do
-  $CMD --port=$port --raft_my_target=localhost:$port --raft_targets=$TARGETS &
+  $CMD --port=$port --raft_my_target=127.0.0.1:$port --raft_targets=$TARGETS --raft_impl=braft&
 done
 
 # Wait until Ctrl-C and kill everything.

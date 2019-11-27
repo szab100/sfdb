@@ -210,6 +210,18 @@ func newConnection() *Connection {
 	}
 }
 
+// Establishes actual connection to GRPC server
+func ConnectToService(address string, timeout time.Duration) (*grpc.ClientConn, *sfdb_pb.SfdbServiceClient, error) {
+	rpcConn, err := grpc.Dial(address, grpc.WithBlock(), grpc.WithTimeout(timeout), grpc.WithInsecure())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	stub := sfdb_pb.NewSfdbServiceClient(rpcConn)
+
+	return rpcConn, &stub, nil
+}
+
 // Connect establishes RPC Connection with SFDB target host
 // with the given Connection string.
 // TODO: Use a pool of connections?
@@ -224,14 +236,7 @@ func Connect(connString string) (*Connection, error) {
 	}
 
 	// 2. establish RPC Connection
-	conn.rpcConn, err = grpc.Dial(conn.addr, grpc.WithBlock(), grpc.WithTimeout(1*time.Second), grpc.WithInsecure())
-	if err != nil {
-		return nil, err
-	}
-
-	// 3. init RPC stub
-	stub := sfdb_pb.NewSfdbServiceClient(conn.rpcConn)
-	conn.stub = &stub
+	conn.rpcConn, conn.stub , err = ConnectToService(conn.addr, 1*time.Second)
 
 	return conn, nil
 }
@@ -245,6 +250,19 @@ func (c *Connection) Ping(ctx context.Context) (err error) {
 	if c.rpcConn.GetState() != connectivity.Ready && c.rpcConn.GetState() != connectivity.Idle {
 		return driver.ErrBadConn
 	}
+
+	return nil
+}
+
+func (c *Connection) Redirect(new_host string) (err error) {
+	rpcConn, stub, err := ConnectToService(new_host, 1*time.Second)
+
+	if err != nil {
+		return err
+	}
+
+	c.rpcConn = rpcConn
+	c.stub = stub
 
 	return nil
 }

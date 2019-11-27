@@ -160,24 +160,45 @@ func queryRPC(ctx context.Context, query string, conn *Connection) (driver.Rows,
 		return nil, err
 	}
 
-	// TODO: Implement redirects to leader using Status
-	// Status field is optional and introduced to provide an extended
-	// reason for query failure when it is possible.
-	if pbResp.Status != nil && *pbResp.Status != api_pb.ExecSqlResponse_OK {
-		return nil, errors.New("Query failed")
-	}
-
 	rows, err := NewRows(pbResp.Rows, pbResp.Descriptors)
 	return rows, err
 }
 
 // execRPC sends a preprocessed query in statement to SFDB via RPC.
 func execRPC(ctx context.Context, query string, conn *Connection) (driver.Result, error) {
-	pbResp, err := SendRPC(ctx, query, conn)
-	if err != nil {
-		return nil, err
+	var resp *api_pb.ExecSqlResponse = nil
+
+	for num_retries := 3; num_retries > 0; {
+		pbResp, pbErr := SendRPC(ctx, query, conn)
+		if pbErr != nil {
+			return nil, pbErr
+		}
+
+		// Server may not support status field
+		if pbResp.Status == nil {
+			resp = pbResp
+			break
+		} else {
+			if *pbResp.Status == api_pb.ExecSqlResponse_OK {
+				resp = pbResp
+				break
+			} else if *pbResp.Status == api_pb.ExecSqlResponse_REDIRECT && resp.Redirect != nil {
+				pbErr = conn.Redirect(*resp.Redirect)
+				if pbErr != nil {
+					return nil, pbErr
+				}
+				// Query will be retried
+			} else {
+				return nil, errors.New("Server return unknown status")
+			}
+		}
+		num_retries -= 1
 	}
 
-	result, err := NewResult(pbResp)
+	if resp == nil {
+		return nil, errors.New("No response from server")
+	}
+
+	result, err := NewResult(resp)
 	return result, err
 }

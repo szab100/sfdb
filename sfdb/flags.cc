@@ -37,10 +37,10 @@ ABSL_FLAG(string, raft_impl, "raft",
           "\traft - built in raft implementation. GRPC will be used as RPC implementation"
           "\tbraft - BRAFT implementation. BRPC will be used as RPC implementation");
 
-ABSL_FLAG(string, raft_my_target, "localhost:27910",
+ABSL_FLAG(string, raft_my_target, "127.0.0.1:27910",
           "A SmartStub-compatible Stubby target of this binary.");
 
-ABSL_FLAG(string, raft_targets, "",
+ABSL_FLAG(string, raft_targets, "127.0.0.1:27910:0",
           "The list of all (or other) RAFT targets in the cluster.");
 
 // -----------------------------------------------------------------------------

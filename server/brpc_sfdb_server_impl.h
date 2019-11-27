@@ -52,11 +52,13 @@ class BrpcSfdbServerImpl {
   void WaitTillStopped();
 
  private:
+  // NOTE: Order of creation is important
+  std::unique_ptr<butil::AtExitManager> at_exit_wrapper_;
+
   std::unique_ptr<BraftNode> node_;
   std::unique_ptr<BrpcSfdbServiceImpl> service_impl_;
 
-  std::unique_ptr<brpc::Server> server;
-  std::unique_ptr<butil::AtExitManager> at_exit_wrapper_;
+  std::unique_ptr<brpc::Server> server_;
 };
 
 }  // namespace sfdb

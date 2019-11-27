@@ -62,7 +62,9 @@ int main(int argc, char **argv) {
   int port;
   CHECK(absl::SimpleAtoi(address_parts[1], &port));
 
-  server->StartAndWait(address_parts[0], port, GetFlag(FLAGS_raft_targets));
+  if (server->StartAndWait(address_parts[0], port, GetFlag(FLAGS_raft_targets))) {
+    LOG(FATAL) << "Failed to launch server";
+  }
 
   return 0;
 }

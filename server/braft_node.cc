@@ -52,6 +52,7 @@ bool BraftNode::Start(const BraftNodeOptions &options,
 
   butil::EndPoint ep;
   if (str2endpoint(options.host.c_str(), options.port, &ep) != 0) {
+    LOG(ERROR) << "Failed to parse host/port";
     return false;
   }
 
@@ -75,11 +76,13 @@ bool BraftNode::Start(const BraftNodeOptions &options,
                                                ::braft::PeerId(ep));
 
   if (node->init(node_options) != 0) {
+    LOG(ERROR) << "Failed to initialize BRAFT node";
     return false;
   }
 
   state_machine_.swap(state_machine);
   node_.swap(node);
+
   return true;
 }
 

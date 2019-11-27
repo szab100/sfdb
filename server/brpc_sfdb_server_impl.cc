@@ -74,7 +74,7 @@ bool BrpcSfdbServerImpl::Start(const std::string &host, int port,
 
   server_ = std::move(server);
 
-  LOG(INFO) << "BRAFT BRPC server started...";
+  LOG(INFO) << "BRAFT BRPC server started at " << host << ":" << port;
 
   return true;
 }

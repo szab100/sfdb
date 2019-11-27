@@ -182,8 +182,8 @@ func execRPC(ctx context.Context, query string, conn *Connection) (driver.Result
 			if *pbResp.Status == api_pb.ExecSqlResponse_OK {
 				resp = pbResp
 				break
-			} else if *pbResp.Status == api_pb.ExecSqlResponse_REDIRECT && resp.Redirect != nil {
-				pbErr = conn.Redirect(*resp.Redirect)
+			} else if *pbResp.Status == api_pb.ExecSqlResponse_REDIRECT && pbResp.Redirect != nil {
+				pbErr = conn.Redirect(*pbResp.Redirect)
 				if pbErr != nil {
 					return nil, pbErr
 				}

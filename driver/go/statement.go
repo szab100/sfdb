@@ -80,7 +80,7 @@ func (s *stmt) QueryContext(ctx context.Context, args []driver.NamedValue) (driv
 	if err != nil {
 		return nil, err
 	}
-	return queryRPC(ctx, processedQuery, s.conn)
+	return QueryRPC(ctx, processedQuery, s.conn)
 
 }
 
@@ -104,7 +104,7 @@ func (s *stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (drive
 	if err != nil {
 		return nil, err
 	}
-	return execRPC(ctx, processedQuery, s.conn)
+	return ExecRPC(ctx, processedQuery, s.conn)
 }
 
 // TODO: Add sanitization here
@@ -152,7 +152,7 @@ func interpolate(query string, args []driver.NamedValue) (string, error) {
 	return query, nil
 }
 
-func CallRPC(ctx context.Context, query string, conn *Connection) (*api_pb.ExecSqlResponse, error) {
+func DoRPC(ctx context.Context, query string, conn *Connection) (*api_pb.ExecSqlResponse, error) {
 	var resp *api_pb.ExecSqlResponse = nil
 
 	for num_retries := 3; num_retries > 0; {
@@ -191,8 +191,8 @@ func CallRPC(ctx context.Context, query string, conn *Connection) (*api_pb.ExecS
 
 // queryRPC sends a preprocessed query in statement to SFDB via RPC,
 // then converts the Protobuf response to rows.
-func queryRPC(ctx context.Context, query string, conn *Connection) (driver.Rows, error) {
-	resp, err := CallRPC(ctx, query, conn)
+func QueryRPC(ctx context.Context, query string, conn *Connection) (driver.Rows, error) {
+	resp, err := DoRPC(ctx, query, conn)
 	if err != nil {
 		return nil, err
 	}
@@ -202,8 +202,8 @@ func queryRPC(ctx context.Context, query string, conn *Connection) (driver.Rows,
 }
 
 // execRPC sends a preprocessed query in statement to SFDB via RPC.
-func execRPC(ctx context.Context, query string, conn *Connection) (driver.Result, error) {
-	resp, err := CallRPC(ctx, query, conn)
+func ExecRPC(ctx context.Context, query string, conn *Connection) (driver.Result, error) {
+	resp, err := DoRPC(ctx, query, conn)
 	if err != nil {
 		return nil, err
 	}

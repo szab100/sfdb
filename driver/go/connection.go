@@ -134,7 +134,7 @@ func (c *Connection) QueryContext(ctx context.Context, query string,
 	if err != nil {
 		return nil, err
 	}
-	return queryRPC(ctx, processedQuery, c)
+	return QueryRPC(ctx, processedQuery, c)
 }
 
 func (c *Connection) ExecContext(ctx context.Context, query string,
@@ -143,7 +143,7 @@ func (c *Connection) ExecContext(ctx context.Context, query string,
 	if err != nil {
 		return nil, err
 	}
-	return execRPC(ctx, processedQuery, c)
+	return ExecRPC(ctx, processedQuery, c)
 }
 
 // ParseConnString parses connection string to Connection struct.

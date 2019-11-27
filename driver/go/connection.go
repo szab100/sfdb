@@ -254,7 +254,14 @@ func (c *Connection) Ping(ctx context.Context) (err error) {
 }
 
 func (c *Connection) Redirect(new_host string) (err error) {
-	rpcConn, stub, err := ConnectToService(new_host, 1*time.Second)
+	parts := strings.Split(new_host, ":")
+	if len(parts) < 2 {
+		return errors.New(fmt.Sprintf("Invalid redirect address: %s", new_host))
+	}
+
+	var new_service_address = parts[0] + ":" + parts[1]
+
+	rpcConn, stub, err := ConnectToService(new_service_address, 1*time.Second)
 
 	if err != nil {
 		return err

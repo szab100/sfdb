@@ -72,9 +72,10 @@ void BraftStateMachineImpl::on_apply(::braft::Iterator &iter) {
 
     auto result = exec_sql_handler_(sql_query, response);
     if (response) {
-      response->set_status(result.first != ::util::error::OK
-                               ? ExecSqlResponse::OK
-                               : ExecSqlResponse::ERROR);
+      if (result.first != ::util::error::OK) {
+        LOG(INFO) << "SQL failed: " << result.second;
+        response->set_status(ExecSqlResponse::ERROR);
+      }
     }
   }
 }

@@ -152,20 +152,7 @@ func interpolate(query string, args []driver.NamedValue) (string, error) {
 	return query, nil
 }
 
-// queryRPC sends a preprocessed query in statement to SFDB via RPC,
-// then converts the Protobuf response to rows.
-func queryRPC(ctx context.Context, query string, conn *Connection) (driver.Rows, error) {
-	pbResp, err := SendRPC(ctx, query, conn)
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := NewRows(pbResp.Rows, pbResp.Descriptors)
-	return rows, err
-}
-
-// execRPC sends a preprocessed query in statement to SFDB via RPC.
-func execRPC(ctx context.Context, query string, conn *Connection) (driver.Result, error) {
+func CallRPC(ctx context.Context, query string, conn *Connection) (*api_pb.ExecSqlResponse, error) {
 	var resp *api_pb.ExecSqlResponse = nil
 
 	for num_retries := 3; num_retries > 0; {
@@ -189,14 +176,36 @@ func execRPC(ctx context.Context, query string, conn *Connection) (driver.Result
 				}
 				// Query will be retried
 			} else {
-				return nil, errors.New("Server return unknown status")
+				return nil, errors.New("Server returned error\n")
 			}
 		}
 		num_retries -= 1
 	}
 
 	if resp == nil {
-		return nil, errors.New("No response from server")
+		return nil, errors.New("No response from server\n")
+	}
+
+	return resp, nil
+}
+
+// queryRPC sends a preprocessed query in statement to SFDB via RPC,
+// then converts the Protobuf response to rows.
+func queryRPC(ctx context.Context, query string, conn *Connection) (driver.Rows, error) {
+	resp, err := CallRPC(ctx, query, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := NewRows(resp.Rows, resp.Descriptors)
+	return rows, err
+}
+
+// execRPC sends a preprocessed query in statement to SFDB via RPC.
+func execRPC(ctx context.Context, query string, conn *Connection) (driver.Result, error) {
+	resp, err := CallRPC(ctx, query, conn)
+	if err != nil {
+		return nil, err
 	}
 
 	result, err := NewResult(resp)

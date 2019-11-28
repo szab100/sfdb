@@ -10,7 +10,7 @@ export class DropTableDialogComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<DropTableDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData) {}
+    @Inject(MAT_DIALOG_DATA) public data: any) {}
 
   ngOnInit() {
   }

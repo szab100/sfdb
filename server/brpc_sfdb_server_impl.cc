@@ -42,7 +42,7 @@ BrpcSfdbServerImpl::~BrpcSfdbServerImpl() = default;
 bool BrpcSfdbServerImpl::Start(const std::string &host, int port,
                                const std::string &raft_targets,
                                const BraftExecSqlHandler &exec_sql_handler) {
-  CHECK(!server_) << "server already started";
+  CHECK(!server_) << "Server already started";
 
   auto server = absl::make_unique<brpc::Server>();
 
@@ -74,7 +74,7 @@ bool BrpcSfdbServerImpl::Start(const std::string &host, int port,
 
   server_ = std::move(server);
 
-  LOG(INFO) << "BRAFT BRPC server started at " << host << ":" << port;
+  VLOG(2) << "BRAFT BRPC server started on " << host << ":" << port;
 
   return true;
 }

@@ -35,6 +35,9 @@ bool GrpcSfdbServer::StartAndWait(const std::string &host, int port,
   auto server_builder = modules_->server_builder();
   server_builder->RegisterService(service_impl_.get());
   auto server = server_builder->BuildAndStart();
+
+  VLOG(2) << "RAFT GRPC server started on " << host << ":" << port;
+
   server->Wait();
 
   return true;

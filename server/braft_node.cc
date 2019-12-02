@@ -23,8 +23,12 @@
 #include "server/braft_node.h"
 
 #include <atomic>
+#include <string>
 
 #include "absl/memory/memory.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include "braft/configuration_manager.h"
 #include "braft/node.h"
 #include "braft/raft.h"
@@ -51,13 +55,41 @@ bool BraftNode::Start(const BraftNodeOptions &options,
       });
 
   butil::EndPoint ep;
-  if (str2endpoint(options.host.c_str(), options.port, &ep) != 0) {
+  if (hostname2endpoint(options.host.c_str(), options.port, &ep) != 0) {
     LOG(ERROR) << "Failed to parse host/port";
     return false;
   }
 
+  // Parse options.raft_members and convert hostnames to IPs
+  std::string raft_member_ips;
+  for (const auto& part : absl::StrSplit(options.raft_members, ",")) {
+    const std::vector<std::string> address_parts = absl::StrSplit(part, ":");
+    if (address_parts.size() < 2) {
+      LOG(ERROR) << "Failed to parse host/port of RAFT cluster member";
+      return false;
+    }
+
+    int port;
+    if (!absl::SimpleAtoi(address_parts[1], &port)) {
+      LOG(ERROR) << "Failed to parse port of RAFT cluster member";
+      return false;
+    }
+
+    butil::EndPoint member_ep;
+    if (butil::hostname2endpoint(address_parts[0].c_str(), port, &member_ep) != 0) {
+      LOG(ERROR) << "Failed to create endpoint from host/port of RAFT cluster member";
+      return false;
+    }
+
+    if (!raft_member_ips.empty()) {
+      raft_member_ips += ',';
+    }
+    auto ep_str = butil::endpoint2str(member_ep);
+    raft_member_ips += ep_str.c_str();
+  }
+
   ::braft::NodeOptions node_options;
-  if (node_options.initial_conf.parse_from(options.raft_members) != 0) {
+  if (node_options.initial_conf.parse_from(raft_member_ips) != 0) {
     LOG(ERROR) << "Failed to parse cluster config";
     return false;
   }

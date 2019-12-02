@@ -73,7 +73,7 @@ void BraftStateMachineImpl::on_apply(::braft::Iterator &iter) {
     auto result = exec_sql_handler_(sql_query, response);
     if (response) {
       if (result.first != ::util::error::OK) {
-        LOG(INFO) << "SQL failed: " << result.second;
+        LOG(ERROR) << "SQL failed: " << result.second;
         response->set_status(ExecSqlResponse::ERROR);
       }
     }
@@ -82,33 +82,33 @@ void BraftStateMachineImpl::on_apply(::braft::Iterator &iter) {
 
 void BraftStateMachineImpl::on_leader_start(int64_t term) {
   leader_term_.store(term, butil::memory_order_release);
-  LOG(INFO) << "BraftStateMachineImpl::on_leader_start: " << term;
+  VLOG(5) << "BraftStateMachineImpl::on_leader_start: " << term;
 }
 
 void BraftStateMachineImpl::on_leader_stop(const ::butil::Status &status) {
   leader_term_.store(-1, butil::memory_order_release);
-  LOG(INFO) << "BraftStateMachineImpl::on_leader_stop: " << status;
+  VLOG(5) << "BraftStateMachineImpl::on_leader_stop: " << status;
 }
 
 void BraftStateMachineImpl::on_shutdown() {}
 
 void BraftStateMachineImpl::on_error(const ::braft::Error &e) {
-  LOG(INFO) << "BraftStateMachineImpl::on_error: " << e.status();
+  VLOG(5) << "BraftStateMachineImpl::on_error: " << e.status();
 }
 
 void BraftStateMachineImpl::on_configuration_committed(
     const ::braft::Configuration &conf) {
-  LOG(INFO) << "BraftStateMachineImpl::on_configuration_committed";
+  VLOG(5) << "BraftStateMachineImpl::on_configuration_committed";
 }
 
 void BraftStateMachineImpl::on_stop_following(
     const ::braft::LeaderChangeContext &ctx) {
-  LOG(INFO) << "BraftStateMachineImpl::on_start_following";
+  VLOG(5) << "BraftStateMachineImpl::on_start_following";
 }
 
 void BraftStateMachineImpl::on_start_following(
     const ::braft::LeaderChangeContext &ctx) {
-  LOG(INFO) << "BraftStateMachineImpl::on_start_following";
+  VLOG(5) << "BraftStateMachineImpl::on_start_following";
 }
 
 }  // namespace sfdb

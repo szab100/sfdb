@@ -59,6 +59,8 @@ const ::google::protobuf::Descriptor *BuildTableListDescriptor(ProtoPool *p) {
       {"table_name", FieldDescriptor::TYPE_STRING},
   };
 
+  // Failure to create descriptor is fatal, it should not fail under
+  // normal conditions.
   return p->CreateProtoClass(kTableListProtoName, fields).ValueOrDie();
 }
 
@@ -68,6 +70,8 @@ const ::google::protobuf::Descriptor *BuildTableDescDescriptor(ProtoPool *p, uin
       {"field_type", FieldDescriptor::TYPE_STRING},
   };
 
+  // Failure to create descriptor is fatal, it should not fail under
+  // normal conditions.
   return p->CreateProtoClass(StrFormat("%s%d", kTableDescProtoName, uid), fields).ValueOrDie();
 }
 

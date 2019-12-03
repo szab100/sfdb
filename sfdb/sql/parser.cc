@@ -398,9 +398,11 @@ StatusOr<std::unique_ptr<Ast>> ParseCreateTable(Parser *p) {
   std::unique_ptr<Ast> ast =
       Ast::CreateTable(table, std::move(columns), std::move(column_types));
 
-  auto stmt_with_if =
-      MaybeParseIfExistsStatement(std::move(ast), p).ValueOrDie();
-  return ParseSemicolon(std::move(stmt_with_if), p);
+  auto so4 =
+      MaybeParseIfExistsStatement(std::move(ast), p);
+  if (!so4.ok()) return so4.status();
+
+  return ParseSemicolon(std::move(so4.ValueOrDie()), p);
 }
 
 StatusOr<std::unique_ptr<Ast>> ParseDropTable(Parser *p) {
@@ -410,9 +412,11 @@ StatusOr<std::unique_ptr<Ast>> ParseDropTable(Parser *p) {
 
   std::unique_ptr<Ast> ast = Ast::DropTable(table);
 
-  auto stmt_with_if =
-      MaybeParseIfExistsStatement(std::move(ast), p).ValueOrDie();
-  return ParseSemicolon(std::move(stmt_with_if), p);
+  auto so2 =
+      MaybeParseIfExistsStatement(std::move(ast), p);
+  if (!so2.ok()) return so2.status();
+
+  return ParseSemicolon(std::move(so2.ValueOrDie()), p);
 }
 
 StatusOr<std::unique_ptr<Ast>> ParseCreateIndex(Parser *p) {
@@ -446,9 +450,11 @@ StatusOr<std::unique_ptr<Ast>> ParseCreateIndex(Parser *p) {
   if (columns.empty()) return Err(p, "At least one column is required");
 
   std::unique_ptr<Ast> ast = Ast::CreateIndex(table, std::move(columns), index);
-  auto stmt_with_if =
-      MaybeParseIfExistsStatement(std::move(ast), p).ValueOrDie();
-  return ParseSemicolon(std::move(stmt_with_if), p);
+  auto so4 =
+      MaybeParseIfExistsStatement(std::move(ast), p);
+  if (!so4.ok()) return so4.status();
+
+  return ParseSemicolon(std::move(so4.ValueOrDie()), p);
 }
 
 StatusOr<std::unique_ptr<Ast>> ParseDropIndex(Parser *p) {
@@ -457,9 +463,11 @@ StatusOr<std::unique_ptr<Ast>> ParseDropIndex(Parser *p) {
   const std::string index = so.ValueOrDie();
 
   std::unique_ptr<Ast> ast = Ast::DropIndex(index);
-  auto stmt_with_if =
-      MaybeParseIfExistsStatement(std::move(ast), p).ValueOrDie();
-  return ParseSemicolon(std::move(stmt_with_if), p);
+  auto so2 =
+      MaybeParseIfExistsStatement(std::move(ast), p);
+  if (!so2.ok()) return so2.status();
+
+  return ParseSemicolon(std::move(so2.ValueOrDie()), p);
 }
 
 StatusOr<std::unique_ptr<Ast>> ParseCreate(Parser *p) {

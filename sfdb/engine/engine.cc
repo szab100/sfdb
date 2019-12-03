@@ -86,6 +86,8 @@ Status ExecuteRead(
   StatusOr<std::unique_ptr<Ast>> so = ExpandAst(
       std::move(ast), pool, db, db->vars.get());
 
+  if (!so.ok()) return so.status();
+
   StatusOr<std::unique_ptr<TypedAst>> so2 = InferResultTypes(
       std::move(so.ValueOrDie()), pool, db, db->vars.get());
   if (!so2.ok()) return so2.status();

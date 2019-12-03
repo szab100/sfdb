@@ -81,10 +81,6 @@ RaftInstance::~RaftInstance() { raft_->Stop(); }
 Status RaftInstance::ExecSql(const ExecSqlRequest &request,
                              ExecSqlResponse *response) {
   // TODO: treat reads and writes differently.
-  // StatusOr<std::unique_ptr<Ast>> ast_so = Parse(request.sql());
-  // if (!ast_so.ok()) return ast_so.status();
-  // std::unique_ptr<Ast> ast = std::move(ast_so.ValueOrDie());
-
   Mutation mut;
   mut.set_time_nanos(ToUnixNanos(clock_->TimeNow()));
   mut.set_sql(request.sql());

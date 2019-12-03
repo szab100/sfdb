@@ -52,7 +52,6 @@ func SendRPC(ctx context.Context, query string, conn *Connection) (*sfdb_pb.Exec
 	go func() {
 		protoreq := sfdb_pb.ExecSqlRequest{
 			Sql:                 &query,
-			IncludeDebugStrings: &conn.params.includeDebugStrings,
 		}
 
 		protoresp, err := (*conn.stub).ExecSql(context.TODO(), &protoreq)

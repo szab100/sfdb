@@ -7,9 +7,6 @@ import "google/protobuf/descriptor.proto";
 
 message ExecSqlRequest {
   optional string sql = 1;
-
-  // Whether to include debug_strings in the response.
-  optional bool include_debug_strings = 2;
 }
 
 message ExecSqlResponse {
@@ -30,7 +27,4 @@ message ExecSqlResponse {
 
   // Redirect URL if query was done to not leader node
   optional string redirect = 4;
-
-  // Rows as text-encoded protobufs (if include_debug_strings = true in request)
-  repeated string debug_strings = 5;
 }

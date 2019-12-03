@@ -90,8 +90,6 @@ bool BrpcSfdbServer::StartAndWait(const std::string &host, int port,
             response->set_allocated_descriptors(file_desc_set);
             for (size_t i = 0; i < rows.size(); ++i) {
               response->add_rows()->PackFrom(*rows[i], std::string());
-              // if (request.include_debug_strings())
-              response->add_debug_strings(rows[i]->ShortDebugString());
             }
           }
           return BraftExecSqlResult(::util::error::OK, "");  // OkStatus();

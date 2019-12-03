@@ -62,7 +62,6 @@ func TestParseConnString(t *testing.T) {
 	connString = "admin:pass@localhost:27910/testdb"
 	err = ParseConnString(conn, connString)
 	assertEqual(t, conn.params.ttl, defaultTTLSeconds)
-	assertEqual(t, conn.params.includeDebugStrings, false)
 }
 
 func TestParseConnStringAddressPortOnly(t *testing.T) {
@@ -97,10 +96,9 @@ func TestParseConnStringWrongAddr(t *testing.T) {
 func TestParseConnStringDBParams(t *testing.T) {
 	conn := newConnection()
 
-	connString := "localhost:27910/testdb?includeDebugStrings=1&ttl=3"
+	connString := "localhost:27910/testdb?ttl=3"
 	err := ParseConnString(conn, connString)
 	assertEqual(t, err, nil)
-	assertEqual(t, conn.params.includeDebugStrings, true)
 	assertEqual(t, conn.params.ttl, 3)
 }
 
@@ -117,9 +115,4 @@ func TestParseConnStringWrongDBParams(t *testing.T) {
 	err = ParseConnString(conn, connString)
 	assertEqual(t, err, nil)
 	assertEqual(t, conn.params.ttl, 1337)
-
-	// irrelevant db param vals
-	connString = "localhost:27910/testdb?includeDebugStrings=123"
-	err = ParseConnString(conn, connString)
-	assertEqual(t, err.Error(), "strconv.ParseBool: parsing \"123\": invalid syntax")
 }

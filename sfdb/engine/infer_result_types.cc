@@ -339,7 +339,7 @@ StatusOr<AstType> InferResultType(
 
         // Expand into full column list
         auto t = db->FindTable(src_table_name);
-        if (!t) return InvalidArgumentError(StrCat(
+        if (!t) return NotFoundError(StrCat(
           "Table ", src_table_name, " not found in database ", db->name));
         auto d = t->type;
 

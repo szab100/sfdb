@@ -126,8 +126,6 @@ Status RaftInstance::OnAppend(string_view msg, void *arg) {
       response->set_allocated_descriptors(file_desc_set);
       for (size_t i = 0; i < rows.size(); ++i) {
         response->add_rows()->PackFrom(*rows[i], std::string());
-        if (request.include_debug_strings())
-          response->add_debug_strings(rows[i]->ShortDebugString());
       }
     }
     return OkStatus();

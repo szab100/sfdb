@@ -63,14 +63,13 @@ protected:
   void Go(const char *sql) {
     ExecSqlRequest request;
     request.set_sql(sql);
-    request.set_include_debug_strings(true);
     ::grpc::ServerContext rpc;
     ExecSqlResponse response;
     service_->ExecSql(&rpc, &request, &response);
 
     rows_.clear();
-    for (int i = 0; i < response.debug_strings_size(); ++i)
-      rows_.push_back(response.debug_strings(i));
+    for (int i = 0; i < response.rows_size(); ++i)
+      rows_.push_back(response.rows(i).ShortDebugString());
   }
 
   std::unique_ptr<GrpcModules> modules_;

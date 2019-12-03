@@ -30,6 +30,10 @@
 #include "server/grpc_sfdb_service_impl.h"
 #include "util/net/port.h"
 #include "gtest/gtest.h"
+#include "server/grpc_modules.h"
+#include "server/grpc_sfdb_service_impl.h"
+//#include "sfdb/flags.h"
+#include "util/net/port.h"
 
 namespace sfdb {
 namespace {
@@ -40,10 +44,9 @@ using ::absl::StrFormat;
 class BigTest : public ::testing::Test {
 protected:
   void SetFlags() {
-    auto port = PickUpFreeLocalPort();
-    SetFlag(&FLAGS_port, port);
-    SetFlag(&FLAGS_raft_my_target, StrFormat("0.0.0.0:%d", port));
-    SetFlag(&FLAGS_raft_targets, StrFormat("0.0.0.0:%d", port));
+    //SetFlag(&FLAGS_port, port);
+    //SetFlag(&FLAGS_raft_my_target, StrFormat("0.0.0.0:%d", port));
+    //SetFlag(&FLAGS_raft_targets, StrFormat("0.0.0.0:%d", port));
   }
 
   void SetUp() override {
@@ -56,6 +59,8 @@ protected:
   }
 
   void TearDown() override {
+    rows_.clear();
+
     server_->Shutdown();
     service_ = nullptr;
     modules_ = nullptr;
@@ -66,14 +71,13 @@ protected:
   void Go(::absl::string_view sql) {
     ExecSqlRequest request;
     request.set_sql(std::string(sql));
-    request.set_include_debug_strings(true);
     ::grpc::ServerContext rpc;
     ExecSqlResponse response;
     service_->ExecSql(&rpc, &request, &response);
 
     rows_.clear();
-    for (int i = 0; i < response.debug_strings_size(); ++i)
-      rows_.push_back(response.debug_strings(i));
+    for (int i = 0; i < response.rows_size(); ++i)
+      rows_.push_back(response.rows(i).ShortDebugString());
   }
 
   std::unique_ptr<GrpcModules> modules_;
@@ -86,7 +90,7 @@ TEST_F(BigTest, ManyRows) {
   Go("CREATE TABLE People (name string, age int64);");
   EXPECT_TRUE(rows_.empty());
 
-  const int n = 800;
+  const int n = 160;
   for (int i = 0; i < n; ++i) {
     Go(StrFormat("INSERT INTO People (name, age) VALUES ('Bob_%d', %d);", i,
                  20 + i % 80));
@@ -108,7 +112,7 @@ TEST_F(BigTest, Indices) {
   Go("CREATE TABLE People (name string, age int64);");
   Go("CREATE INDEX ByName ON People(name);");
 
-  const int n = 1024;
+  const int n = 160;
   for (int i = 0; i < n; ++i) {
     Go(StrFormat("INSERT INTO People (name, age) VALUES ('Bob_%d', %d);",
                  666 ^ i, 20 + i * 80));

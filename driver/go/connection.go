@@ -58,11 +58,6 @@ type DBParams struct {
 	// TTL for RPC request.
 	// This should be <= `deadline` protobuf field if it's set.
 	ttl int
-	// If true, then SFDB returns protobuf response as
-	// stringified JSON format (on SELECT queries),
-	// if false, then SFDB returns protobuf with the serialized, compressed
-	// protobufs, and SFDB driver will de-serialize into Row structs.
-	includeDebugStrings bool
 }
 
 // Parse dbParams part of connection string
@@ -84,12 +79,6 @@ func (p *DBParams) Parse(dbParams string) error {
 			}
 			// convert int64 to int
 			p.ttl = int(ttl)
-		case "includeDebugStrings":
-			flag, err := strconv.ParseBool(v)
-			if err != nil {
-				return err
-			}
-			p.includeDebugStrings = flag
 		}
 	}
 

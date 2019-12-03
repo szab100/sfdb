@@ -115,7 +115,13 @@ Status RaftInstance::OnAppend(string_view msg, void *arg) {
     if (!rows.empty()) {
       // Fill metadata info
       auto file_descriptor = tmp_pool->FindProtoFile(rows[0]->GetDescriptor()->name());
+      if (!file_descriptor)
+        return InternalError("Descriptor not found");
+
       google::protobuf::FileDescriptorSet* file_desc_set = new google::protobuf::FileDescriptorSet();
+      if (!file_desc_set)
+        return InternalError("Descriptor set not found");
+
       file_descriptor->CopyTo(file_desc_set->add_file());
       response->set_allocated_descriptors(file_desc_set);
       for (size_t i = 0; i < rows.size(); ++i) {

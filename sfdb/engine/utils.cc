@@ -71,9 +71,9 @@ Status ExecuteExistsCheck(const TypedAst &ast, const Db *db)
 
   bool object_exists = false;
   if (!ast.index_name().empty()) {
-    object_exists = db->FindIndex(ast.index_name());
+    object_exists = !!db->FindIndex(ast.index_name());
   } else if (!ast.table_name().empty()) {
-    object_exists = db->FindTable(ast.table_name());
+    object_exists = !!db->FindTable(ast.table_name());
   } else {
     return InvalidArgumentError("EXISTS used in wrong context");
   }

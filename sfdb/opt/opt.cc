@@ -38,7 +38,10 @@ std::unique_ptr<TypedAst> MaybeUseIndexForUpdate(
     SHARED_LOCKS_REQUIRED(db.mu) {
   if (ast->type != Ast::UPDATE) return std::move(ast);
   const Table *t = db.FindTable(ast->table_name());
-  CHECK(t) << "Table " << ast->table_name() << " not found in DB " << db.name;
+
+  // Just pass through original query, error will be
+  // set further in the code path.
+  if (!t) return std::move(ast);
 
   // Find the best index to use for this UDPATE.
   const TableIndex *best_index = nullptr;

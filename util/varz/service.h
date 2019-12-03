@@ -29,7 +29,7 @@
 
 #include "absl/flags/flag.h"
 #include "absl/strings/string_view.h"
-
+#include "absl/synchronization/mutex.h"
 #include "util/macros/macros.h"
 #include "util/varz/httplib.h"
 
@@ -51,7 +51,10 @@ public:
   static VarZService* Instance();
 private:
   VarZService() = default;
+  ~VarZService();
+
   std::thread thread_;
+  mutable absl::Mutex mutex_;
   httplib::Server server_;
   std::vector<const VarZ*> published_varz_;
 

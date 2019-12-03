@@ -16,6 +16,8 @@ using namespace httplib;
 using absl::GetFlag;
 
 bool VarZService::Start() {
+  absl::MutexLock lock(&mutex_);
+
   std::string varz_content = "<html><body>";
   for (const auto& var : published_varz_) {
     const auto& var_name = var->Name();
@@ -47,7 +49,17 @@ bool VarZService::Start() {
   return true;
 }
 
-void VarZService::Stop() { server_.stop(); }
+void VarZService::Stop() {
+  absl::MutexLock lock(&mutex_);
+
+  if (server_.is_running()) {
+    server_.stop();
+  }
+
+  if (thread_.joinable()) {
+    thread_.join();
+  }
+}
 
 // TODO: we need a way to unregister var when it is destroyed!
 // NOTE: This code is run when static vars are initialized, do not
@@ -64,6 +76,11 @@ VarZService* VarZService::Instance() {
   static VarZService service;
 
   return &service;
+}
+
+VarZService::~VarZService() {
+  // Stop has running check inside
+  Stop();
 }
 
 }  // namespace internal

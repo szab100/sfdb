@@ -23,28 +23,23 @@
 #include <vector>
 
 #include "absl/flags/flag.h"
+#include "google/protobuf/dynamic_message.h"
+#include "gtest/gtest.h"
 #include "server/grpc_modules.h"
 #include "server/grpc_sfdb_service_impl.h"
+#include "sfdb/flags.h"
 #include "util/net/port.h"
-#include "gtest/gtest.h"
 
 namespace sfdb {
 namespace {
 using ::absl::GetFlag;
 using ::absl::SetFlag;
 using ::absl::StrFormat;
+using ::google::protobuf::DynamicMessageFactory;
 
 class E2eTest : public ::testing::Test {
-protected:
-  void SetFlags() {
-    auto port = PickUpFreeLocalPort();
-    SetFlag(&FLAGS_port, port);
-    SetFlag(&FLAGS_raft_my_target, StrFormat("0.0.0.0:%d", port));
-    SetFlag(&FLAGS_raft_targets, StrFormat("0.0.0.0:%d", port));
-  }
-
+ protected:
   void SetUp() override {
-    SetFlags();
     modules_.reset(new GrpcModules);
     auto port = PickUpFreeLocalPort();
     modules_->Init("0.0.0.0", port, StrFormat("0.0.0.0:%d", port));
@@ -60,16 +55,38 @@ protected:
   }
 
   // Populates rows_ with results.
-  void Go(const char *sql) {
+  void Go(const char* sql) {
     ExecSqlRequest request;
     request.set_sql(sql);
     ::grpc::ServerContext rpc;
     ExecSqlResponse response;
-    service_->ExecSql(&rpc, &request, &response);
 
+    CHECK(service_->ExecSql(&rpc, &request, &response).ok());
     rows_.clear();
-    for (int i = 0; i < response.rows_size(); ++i)
-      rows_.push_back(response.rows(i).ShortDebugString());
+
+    if (response.rows_size()) {
+      CHECK(response.has_descriptors())
+          << "Parsing response without descriptors field is unsupported";
+      auto descriptors = response.descriptors();
+
+      CHECK(descriptors.file_size() == 1)
+          << "There must be exactly one file descriptors inside descriptors "
+             "file set";
+      CHECK(descriptors.file(0).message_type_size() == 1)
+          << "There must be exactly one message descriptor inside descriptors "
+             "file set";
+
+      auto rows_desc = descriptors.file(0).message_type(0).descriptor();
+
+      DynamicMessageFactory dmf;
+      for (int i = 0; i < response.rows_size(); ++i) {
+        auto message = dmf.GetPrototype(rows_desc)->New();
+        auto& row = response.rows(i);
+        CHECK(message->ParseFromString(row.value()))
+            << "Failed to decode result row";
+        rows_.push_back(message->ShortDebugString());
+      }
+    }
   }
 
   std::unique_ptr<GrpcModules> modules_;
@@ -90,15 +107,15 @@ TEST_F(E2eTest, Basic) {
 
   Go("SELECT name FROM People WHERE age % 2 = 0;");
   EXPECT_EQ(1, rows_.size());
-  EXPECT_EQ("_1: \"jon\"", rows_[0]);
+  EXPECT_EQ("name: \"jon\"", rows_[0]);
 
   Go("UPDATE People SET age = age + 1 WHERE true;");
   EXPECT_TRUE(rows_.empty());
 
   Go("SELECT name FROM People WHERE age % 2 = 0;");
   EXPECT_EQ(1, rows_.size());
-  EXPECT_EQ("_1: \"bob\"", rows_[0]);
+  EXPECT_EQ("name: \"bob\"", rows_[0]);
 }
 
-} // namespace
-} // namespace sfdb
+}  // namespace
+}  // namespace sfdb

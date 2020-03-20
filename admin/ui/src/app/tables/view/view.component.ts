@@ -15,8 +15,8 @@ import { MatSort } from '@angular/material/sort';
 })
 export class ViewTableComponent implements OnInit, OnDestroy {
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatPaginator, { read: true, static: false }) paginator: MatPaginator;
+  @ViewChild(MatSort, { read: true, static: false }) sort: MatSort;
 
   private paramSub: any;
   public tableName: string;
@@ -44,7 +44,7 @@ export class ViewTableComponent implements OnInit, OnDestroy {
         this.tableData.paginator = this.paginator;
         this.tableData.sort = this.sort;
       });
-   });
+    });
   }
 
   ngOnDestroy() {

@@ -11,8 +11,8 @@ import { first } from 'rxjs/operators';
 })
 export class DescribeTableComponent implements OnInit {
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatPaginator, { read: true, static: false }) paginator: MatPaginator;
+  @ViewChild(MatSort, { read: true, static: false }) sort: MatSort;
 
   private paramSub: any;
   public tableName: string;
@@ -39,7 +39,7 @@ export class DescribeTableComponent implements OnInit {
         this.tableData.paginator = this.paginator;
         this.tableData.sort = this.sort;
       });
-   });
+    });
   }
 
   ngOnDestroy() {

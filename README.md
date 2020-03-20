@@ -1,7 +1,7 @@
-SFDB - Simple Fast Database
+# SFDB - Simple Fast Database
+> Experimental distributed in-memory database, entirely based on protocol buffers, gRPC and the Raft consensus algorithm.
 
-Experimental distributed in-memory database based on protobuf & proto streams,
-gRPC & Raft consensus algorithm.
+[![Build Status](https://travis-ci.org/szab100/sfdb.svg?branch=master)](https://travis-ci.org/szab100/sfdb)
 
 ## Getting Started
 

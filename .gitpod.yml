@@ -7,4 +7,5 @@ image:
 
 vscode:
   extensions:
-    - ms-vscode.cpptools@0.26.2:Pq/tmf2WN3SanVzB4xZc1g==
+    - ms-vscode.cpptools@0.27.0:z/UThvtoloHQ3y4wv5ptAw==
+    - BazelBuild.vscode-bazel@0.3.0:e1QIKxacFdwGVP49DeXIaw==

@@ -4,6 +4,9 @@
 [![Build Status](https://travis-ci.org/szab100/sfdb.svg?branch=master)](https://travis-ci.org/szab100/sfdb)
 
 ## Getting Started
+>You can simply open, build and run this project by clicking the button below.<br>Everything is preinstalled, so simply ignore the <em>Prerequisites</em> section below.
+>
+>[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/szab100/sfdb)
 
 ### Prerequisites
 - Bazel v0.29.1: download the binary matching your platform from here: https://github.com/bazelbuild/bazel/releases/tag/0.29.1

@@ -10,4 +10,5 @@ USER gitpod
 # More information: https://www.gitpod.io/docs/config-docker/
 RUN mkdir $HOME/bin
 RUN wget https://github.com/bazelbuild/bazel/releases/download/0.29.1/bazel-0.29.1-linux-x86_64 -O $HOME/bin/bazel
-RUN chmod +x $HOME/bin/bazel
+RUN wget https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier -O $HOME/bin/buildifier
+RUN chmod +x $HOME/bin/*

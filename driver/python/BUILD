@@ -24,6 +24,7 @@ py_library(
   name = "test/py_test_lib",
   srcs = [
     "test/pylib.py",
+    "test/test_data.py",
   ],
   srcs_version = "PY3",
   visibility = ["//visibility:public"],
@@ -33,13 +34,12 @@ py_test(
   name = "test/connection_test",
   srcs = [
     "test/connection_test.py",
-    "test/pylib.py",
-    "test/test_data.py",
   ],
   srcs_version = "PY3",
   visibility = ["//visibility:public"],
   deps = [
     ":py_db_api",
+    ":test/py_test_lib",
   ],
   data = ["//sfdb:sfdb"],
 )
@@ -48,13 +48,12 @@ py_test(
   name = "test/cursor_test",
   srcs = [
     "test/cursor_test.py",
-    "test/pylib.py",
-    "test/test_data.py",
   ],
   srcs_version = "PY3",
   visibility = ["//visibility:public"],
   deps = [
     ":py_db_api",
+    ":test/py_test_lib",
   ],
   data = ["//sfdb:sfdb"],
 )

@@ -10,6 +10,8 @@ package(default_visibility = ["//visibility:public"])
 
 # gRPC
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
+load("@com_github_grpc_grpc//bazel:python_rules.bzl", 
+     "py_proto_library", "py_grpc_library")
 
 # ------------------------------------------------------------------------------
 # Binaries and MPMs
@@ -64,6 +66,17 @@ go_proto_library(
     importpath = "github.com/googlegsa/sfdb/api_go_proto",
     proto = ":api_proto",
     visibility = ["//visibility:public"],
+)
+
+py_proto_library(
+    name = "api_py_pb2",
+    deps = [":api_proto"],
+)
+
+py_grpc_library(
+    name = "api_pb2_grpc",
+    srcs = [":api_proto"],
+    deps = [":api_py_pb2"],
 )
 
 # ------------------------------------------------------------------------------

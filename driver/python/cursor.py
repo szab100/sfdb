@@ -56,6 +56,11 @@ class Cursor(object):
         self.arraysize = None
         self._query_data = None
         self._errors = None
+        self._handler = {
+            api_pb2.ExecSqlResponse.OK: self._handle_OK,
+            api_pb2.ExecSqlResponse.ERROR: self._handle_ERROR,
+            api_pb2.ExecSqlResponse.REDIRECT: self._handle_REDIRECT,
+        }
 
     @property
     def connection(self):
@@ -81,6 +86,36 @@ class Cursor(object):
             total_rows = num_dml_affected_rows
         self.rowcount = total_rows
 
+    def _handle(self, request):
+        for _ in range(RETRIES):
+            try:
+                response = self._connection.cmd_query(request)
+            except exceptions.InterfaceError:
+                break
+            result = self._handler[response.status](response)
+            if result:
+                return True
+        return False
+
+    def _handle_OK(self, response):
+        _LOGGER.debug("Handling OK: %s", response)
+        self.rowcount = 0
+        if response.rows:
+            descriptors = self._get_descriptors(response)
+            self.rowcount = self._set_data(descriptors, response.rows)
+        return True
+
+    def _handle_REDIRECT(self, response):
+        _LOGGER.debug("Redirecting to: %s", response.redirect)
+        if response.redirect:
+            self._connection._redirect(response.redirect)
+        return False
+
+    def _handle_ERROR(self, response):
+        _LOGGER.error("Server error")
+        self._errors = {"FAILED": "In operation."}
+        return False
+
     def execute(self, operation, parameters=None):
         """Prepare and execute a database operation.
 
@@ -90,34 +125,11 @@ class Cursor(object):
             parameters (Union[Mapping[str, Any], Sequence[Any]]):
                 (Optional) dictionary or sequence of parameter values.
         """
-        _LOGGER.debug('Operation:\n%s', operation)
+        _LOGGER.debug('Operation: %s', operation)
         self._query_data = None
-        req = api_pb2.ExecSqlRequest()
-        req.sql = operation
-        for _ in range(RETRIES):
-            try:
-                resp = self._connection.cmd_query(req)
-            except exceptions.InterfaceError as e:
-                self._errors = e.args[0]
-                _LOGGER.error('Failed to execute query:\n%s', e)
-                return False
-            _LOGGER.debug('Response:\n%s', resp)
-            if resp.status == api_pb2.ExecSqlResponse.ERROR:
-                _LOGGER.error(
-                    "Server returned an error executing:\n%s", operation)
-                self._errors = {"FAILED": operation}
-            if resp.status == api_pb2.ExecSqlResponse.REDIRECT and resp.redirect:
-                _LOGGER.debug("Redirecting to: %s", resp.redirect)
-                self._connection._redirect(resp.redirect)
-                continue
-            if resp.rows:
-                descriptors = self._get_descriptors(resp)
-                self.rowcount = self._set_data(descriptors, resp.rows)
-            else:
-                self.rowcount = 0
-            return True
-        _LOGGER.error("Failed after %d retries.", RETRIES)
-        return False
+        request = api_pb2.ExecSqlRequest()
+        request.sql = operation
+        return self._handle(request)
 
     def executemany(self, operation, seq_of_parameters):
         """Prepare and execute a database operation multiple times.
@@ -187,7 +199,8 @@ class Cursor(object):
 
     @property
     def json(self):
-        return json.dumps(self._query_data)
+        if self._query_data:
+            return json.dumps(self._query_data)
 
     # The following methods not implemented, although expected by DB-API 2.0
     def callproc(self, procname):

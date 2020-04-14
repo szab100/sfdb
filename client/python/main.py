@@ -10,7 +10,8 @@ def run_cli_with(options):
     try:
         sfdbcli.connect_to_database()
         cursor = sfdbcli.execute_query(str(options.query))
-        print(cursor.json)
+        if cursor.json:
+            print(cursor.json)
         print(f'Rows affected: {cursor.rowcount}', file=sys.stderr)
     finally:
         sfdbcli.shutdown()

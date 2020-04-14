@@ -37,7 +37,7 @@ class CursorTest(unittest.TestCase):
 
     def test_no_table(self):
         self.cur.execute("SELECT id FROM Test;")
-        self.assertDictEqual({'FAILED': 'SELECT id FROM Test;'},
+        self.assertDictEqual({'FAILED': 'In operation.'},
                              self.cur._errors)
 
     def test_json(self):

@@ -58,10 +58,8 @@ class Connection(object):
         self._stub = None
         self._errors = {}
 
-        _LOGGER.debug(
-            u"SFDB connector for Python"
-            u"Version: %s, Platform: %s",
-            PYTHON_VERSION, PLATFORM)
+        _LOGGER.debug(u"SFDB connector. Python Version: %s, Platform: %s",
+                      PYTHON_VERSION, PLATFORM)
         self._connect()
 
     def _connect(self):
@@ -112,7 +110,7 @@ class Connection(object):
             responce protubuf
 
         Raises: 
-            InterfaceError if there any errors.
+            InterfaceError if there are any errors.
         """
         try:
             resp = self._stub.ExecSql(req)

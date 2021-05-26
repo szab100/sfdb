@@ -21,8 +21,7 @@ http_archive(
 git_repository(
     name = "com_github_grpc_grpc",
     remote = "https://github.com/grpc/grpc.git",
-    commit = "08fd59f039c7cf62614ab7741b3f34527af103c7",
-    shallow_since = "1562093080 -0700",
+     tag = "v1.24.3",
 )
 
 git_repository(
@@ -65,6 +64,16 @@ git_repository(
     remote = "https://github.com/google/re2.git",
     shallow_since = "1560490505 +0000",
 )
+
+# Python dependencies
+load("@upb//bazel:workspace_deps.bzl", "upb_deps")
+upb_deps()
+
+load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
+apple_rules_dependencies()
+
+load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
+apple_support_dependencies()
 
 # GoLang main Bazel tools
 http_archive(

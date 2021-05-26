@@ -2,6 +2,8 @@ package(default_visibility = ["//visibility:public"])
 # gRPC
 load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
 load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+load("@com_github_grpc_grpc//bazel:python_rules.bzl", 
+     "py_proto_library", "py_grpc_library")
 
 cc_library(
   name = "common_types",
@@ -123,6 +125,17 @@ go_proto_library(
     proto = ":grpc_sfdb_service_proto",
     visibility = ["//visibility:public"],
     deps = ["//sfdb:api_go_proto"],
+)
+
+py_proto_library(
+  name = "grpc_sfdb_service_py_pb2",
+  deps = [":grpc_sfdb_service_proto"],
+)
+
+py_grpc_library(
+  name = "grpc_sfdb_service_py_pb2_grpc",
+  srcs = [":grpc_sfdb_service_proto"],
+  deps = [":grpc_sfdb_service_py_pb2"]
 )
 
 cc_library(

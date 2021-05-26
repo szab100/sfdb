@@ -21,7 +21,8 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
     apt-get -qqy update
 
-    apt-get -qqy install make zip unzip git pkg-config libssl-dev zlib1g-dev
+    apt-get -qqy install make zip unzip git pkg-config libssl-dev zlib1g-dev 
+    apt-get -qqy install python-dev python3-dev python3.7
 
     echo "[vagrant provisioning] Downloading Bazel..."
     wget --quiet https://github.com/bazelbuild/bazel/releases/download/0.29.1/bazel-0.29.1-installer-linux-x86_64.sh
